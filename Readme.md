@@ -15,7 +15,14 @@ Para criar o backend do projeto de ecommerce, é necessário instalar alguns mó
   - npm install express sequelize mysql2 bcrypt
   - Este comando instalará os módulos Express, Sequelize, MySQL2 e Bcrypt, que são utilizados para criar um servidor web, realizar operações no banco de dados SQL autenticação de usuários e encriptação de senhas, respectivamente.
 3. Ter um servidor mysql configurado para realizar os testes.
-
+4.  Adicione o arquivo ' .env ' com as variáveis de Ambiente para acesso ao Mysql Server.
+```
+DB_NAME=ecommerce
+DB_USER=root
+DB_PASSWORD=senha
+DB_HOST=127.0.0.1
+DB_DIALECT=mysql
+```
 
 - Rotas para testes
 - get: localhost:3000/users
