@@ -15,12 +15,12 @@ exports.updateUserPassword = async (req, res) => {
       );
       // Se nenhum usuário foi atualizado, devido a  id invalido apresenta erro 404
       if (updatedUser[0] === 0) {
-        return res.status(404).json({ message: 'Usuário não encontrado.' });
+        return res.status(404).json({ message: 'Usuário não encontrado.🔍' });
       }
       // reposta de sucesso 200 ou 500 de erro interno
       res.status(200).json({ message: '🤖 Senha Alterada com Sucesso. 🤖' });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      res.status(500).json({ message: 'Erro interno do servidor 😱🤯' });
     }
   };

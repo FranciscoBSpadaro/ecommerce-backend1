@@ -8,7 +8,7 @@ const ProductController = {
     try {
       // Extrair dados do corpo da requisição
       const { name, price, description } = req.body;
-      
+
       // Criar um novo objeto do tipo Product com os dados fornecidos
       const newProduct = new Product({
         name,
