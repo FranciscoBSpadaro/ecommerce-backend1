@@ -7,7 +7,8 @@ const UserController = require('./controllers/UserController');
 routes.get('/users', UserController.getAllUsers);
 routes.get('/users/:id', UserController.getUsersbyID);
 routes.post('/users', UserController.createUser);
-routes.put('/users/:id', UserController.updateUser);
+routes.put('/users/:id', UserController.updateUserEmail);
+
 routes.delete('/users/:id', UserController.deleteUser);
 
 const ProductController = require('./controllers/ProductController');
@@ -18,6 +19,9 @@ routes.get('/products:id', ProductController.getProductById);
 routes.get('/products', ProductController.getAllProducts);
 routes.put('/products:id', ProductController.updateProductById);
 routes.delete('/products:id', ProductController.deleteProductById);
+
+const PasswordController = require('./controllers/PasswordController');
+routes.put('/password/:id', PasswordController.updateUserPassword);
 
 
 module.exports = routes;
