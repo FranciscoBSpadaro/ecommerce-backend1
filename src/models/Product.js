@@ -18,6 +18,11 @@ const Product = db.define('products', {
   description: {
     type: Sequelize.TEXT,
     allowNull: true
+  },
+  quantity: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    defaultValue: 0
   }
 });
 

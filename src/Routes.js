@@ -14,10 +14,10 @@ const ProductController = require('./controllers/ProductController');  // import
 
 // Define as rotas relacionadas aos produtos.
 routes.post('/products', ProductController.createProduct);
-routes.get('/products:id', ProductController.getProductById);
+routes.get('/products/:id', ProductController.getProductById);
 routes.get('/products', ProductController.getAllProducts);
-routes.put('/products:id', ProductController.updateProductById);
-routes.delete('/products:id', ProductController.deleteProductById);
+routes.put('/products/:id', ProductController.updateProductById);
+routes.delete('/products/:id', ProductController.deleteProductById);
 
 const PasswordController = require('./controllers/PasswordController'); // importando controlador para alterar senhas
 // define a rota de senhas. 

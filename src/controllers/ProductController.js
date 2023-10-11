@@ -1,123 +1,91 @@
 // Importar o model Product
 const Product = require('../models/Product');
 
+const { isProductAlreadyRegistered } = require('../utils/validationUtils');
+
 // Definir os métodos do controller
 const ProductController = {
-  // Método para criar um novo produto
-  createProduct: async (req, res) => {
+  createProduct: async (req, res) => {                                   
     try {
-      // Extrair dados do corpo da requisição
-      const { name, price, description } = req.body;
-
-      // Criar um novo objeto do tipo Product com os dados fornecidos
-      const newProduct = new Product({
+      const { name, price, description, quantity } = req.body;                     
+      const produtoJaExiste = await Product.findOne({ where: { name } });         // validador verifica se o produto ja existe pelo nome
+      if (produtoJaExiste) {                                                      // se produto ja existe adiciona a quantidade de produtos inserida no post
+        const updatedQuantity = parseInt(quantity, 10) || 1;               // se ao cadastrar o produto nao inserir a quantidade , vai adicionar 1 de quantidade toda vez , e (quantity, 10) o numero 10 representa a base decimal de parseInt  para garantir que o número seja interpretado como um decimal
+        produtoJaExiste.quantity += updatedQuantity;
+        await produtoJaExiste.save();                                    
+        return res.status(200).json({ message: `⚠ O Produto ${produtoJaExiste.name} já está cadastrado. A quantidade de itens foi atualizada para ${produtoJaExiste.quantity}. ⚠` });
+      }
+      const newProduct = new Product({                                   
         name,
         price,
-        description
+        description,
+        quantity: quantity || 1                                                     
       });
-
-      // Salvar o novo produto no banco de dados
-      const savedProduct = await newProduct.save();
-
-      // Retornar o novo produto criado como resposta
-      res.status(201).json(savedProduct);
-    } catch (error) {
-      // Em caso de erro, retornar uma resposta com status 500 e mensagem de erro
-      res.status(500).json({ error: error.message });
+      const savedProduct = await newProduct.save();                      
+      res.status(201).json(savedProduct);                                
+    }
+    catch (error) {
+      res.status(401).json({ error: error.message });
     }
   },
-
   // Método para obter todos os produtos
   getAllProducts: async (req, res) => {
     try {
-      // Obter todos os produtos do banco de dados
-      const products = await Product.findAll();
-
-      // Retornar os produtos obtidos como resposta
-      res.status(200).json(products);
-    } catch (error) {
-      // Em caso de erro, retornar uma resposta com status 500 e mensagem de erro
-      res.status(500).json({ error: error.message });
+      const products = await Product.findAll();                            // Obter todos os produtos do banco de dados
+      res.status(200).json(products);                                      // Retornar os produtos obtidos como resposta
+    }
+    catch (error) {
+      res.status(401).json({ error: error.message });
     }
   },
-
   // Método para obter um produto pelo seu ID
   getProductById: async (req, res) => {
     try {
-      // Obter o ID do produto a partir dos parâmetros da requisição
-      const { id } = req.params;
+      const { id } = req.params;                                            // Obter o ID do produto a partir dos parâmetros da requisição
+      const product = await Product.findByPk(id);                           // Buscar o produto no banco de dados pelo seu ID
 
-      // Buscar o produto no banco de dados pelo seu ID
-      const product = await Product.findById(id);
-
-      // Verificar se o produto foi encontrado
-      if (!product) {
-        // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
-        return res.status(404).json({ error: "Product not found" });
+      if (!product) {                                                      // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
+        return res.status(404).json({ error: "Produto não encontrado" });
       }
-
-      // Retornar o produto encontrado como resposta
-      res.status(200).json(product);
-    } catch (error) {
-      // Em caso de erro, retornar uma resposta com status 500 e mensagem de erro
+      res.status(200).json(product);                                       // Retornar o produto encontrado como resposta
+    }
+    catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
-
   // Método para atualizar um produto pelo seu ID
   updateProductById: async (req, res) => {
     try {
-      // Obter o ID do produto a partir dos parâmetros da requisição
       const { id } = req.params;
+      const product = await Product.findByPk(id);
 
-      // Buscar o produto no banco de dados pelo seu ID
-      const product = await Product.findById(id);
-
-      // Verificar se o produto foi encontrado
-      if (!product) {
-        // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
-        return res.status(404).json({ error: "Product not found" });
+      if (!product) {                                                                     // Verificar se o produto foi encontrado
+        return res.status(404).json({ error: "Produto não encontrado" });                  // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
       }
 
-      // Extrair dados do corpo da requisição
-      const { name, price, description } = req.body;
+      const { quantity, price, description } = req.body;                                    // Extrair dados do corpo da requisição , como regra de negocio o nome nao pode ser alterado.
 
-      // Atualizar os dados do produto encontrado com os novos dados fornecidos
-      product.name = name;
+      product.quantity = quantity;                                                          // Atualizar os dados do produto encontrado com os novos dados fornecidos
       product.price = price;
       product.description = description;
 
-      // Salvar as alterações no produto no banco de dados
-      const updatedProduct = await product.save();
-
-      // Retornar o produto atualizado como resposta
-      res.status(200).json(updatedProduct);
+      const updatedProduct = await product.save();                                        // Salvar as alterações no produto no banco de dados
+      res.status(200).json(updatedProduct);                                               // Retornar o produto atualizado como resposta
     } catch (error) {
-      // Em caso de erro, retornar uma resposta com status 500 e mensagem de erro
-      res.status(500).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   },
-
   // Método para excluir um produto pelo seu ID
   deleteProductById: async (req, res) => {
     try {
-      // Obter o ID do produto a partir dos parâmetros da requisição
-      const { id } = req.params;
-
-      // Excluir o produto do banco de dados pelo seu ID
-      const deletedProduct = await Product.findByIdAndDelete(id);
-
-      // Verificar se o produto foi encontrado e excluído
-      if (!deletedProduct) {
-        // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
-        return res.status(404).json({ error: "Product not found" });
+      const deletedProduct = await Product.destroy({ where: { id: req.params.id } });      // Excluir o produto do banco de dados pelo seu ID
+      if (!deletedProduct) {                                                               // Verificar se o produto foi encontrado e excluído
+        return res.status(404).json({ error: "Produto não encontrado" });                       // Se o produto não foi encontrado, retornar uma resposta com status 404
       }
-
-      // Retornar o produto excluído como resposta
-      res.status(200).json(deletedProduct);
-    } catch (error) {
-      // Em caso de erro, retornar uma resposta com status 500 e mensagem de erro
-      res.status(500).json({ error: error.message });
+      res.status(200).json({ message: "Produto Excluido com Sucesso." });
+    }
+    catch (error) {
+      res.status(401).json({ error: error.message });
     }
   }
 };
