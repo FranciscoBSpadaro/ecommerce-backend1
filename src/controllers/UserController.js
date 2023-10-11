@@ -8,8 +8,7 @@ const { isUserAlreadyRegistered } = require('../utils/validationUtils');   // im
 // Função para criar usuários
 exports.createUser = async (req, res) => {
   try {
-    const { username } = req.body;                                        // variável para validar usarios pelo username cadastro no db
-    const { password } = req.body;                                        // variável para criar um novo usuário utilizando o bcrypt para criptografar as senhas no banco de dados
+    const { username, password } = req.body;                              // variável para validar usarios pelo username cadastro no db                                     // variável para criar um novo usuário utilizando o bcrypt para criptografar as senhas no banco de dados
     const userAlreadyExists = await isUserAlreadyRegistered(username);    // variável que instancia o validationUtils.ja e verifica se o usuário já está cadastrado
     if (userAlreadyExists) {                                              // se username já é cadastrado retorna erro 400
       return res.status(400).json({ message: `⚠ O Usuário ${username} já está cadastrado ⚠` });
@@ -17,6 +16,7 @@ exports.createUser = async (req, res) => {
     const hashedPassword = await passwordUtils.hashPassword(password);    // variável que instancia o bcrypt passwordUtils.js
     const user = new User({ ...req.body, password: hashedPassword });     // convertendo senha digitada pelo usuário em senha criptografada
     const newUser = await user.save();                                    // salva o usuário no db com a senha criptografada
+    console.log(newUser)
     res.status(201).json({ message: `🤖 O Usuário ${username}, foi Cadastrado com Sucesso! 🤖` }); // se remover a 'mensagem' e add newUser retorna todo o res.status
   }
   catch (error) {
@@ -27,15 +27,16 @@ exports.createUser = async (req, res) => {
 // Função para atualizar um usuário pelo ID
 exports.updateUserEmail = async (req, res) => {
   try {
-    const { id } = req.params;                                                   // Adicionado o parâmetro da rota que devem ser atualizados no put ' id '
-    const { email } = req.body;                                                  // Adicionado o atributo do corpo da requisição que será atualizado 'email'
-    const updatedUser = await User.update(                                       // Função para atualizar os dados  de email, pelo id
+    const { id } = req.params;                                               // Adicionado o parâmetro da rota que devem ser atualizados no put ' id '
+    const { email } = req.body;                                              // Adicionado o atributo do corpo da requisição que será atualizado 'email'
+    const updatedUser = await User.update(                                   // Função para atualizar os dados  de email, pelo id
       { email },
       { where: { id } }
     );
-    if (updatedUser[0] === 0) {                                                  // Se nenhum usuário foi atualizado, devido a  id invalido apresenta erro 404
+    if (updatedUser[0] === 0) {                                              // Se nenhum usuário foi atualizado, devido a  id invalido apresenta erro 404
       return res.status(404).json({ message: 'Usuário não encontrado. 🔍' });
     }
+    console.log(`E-mail do Usuário ID ${id} foi alterado para ${email}`)
     res.status(200).json({ message: '🤖 E-mail Alterado com Sucesso. 🤖' });
   }
   catch (error) {
@@ -50,6 +51,7 @@ exports.deleteUser = async (req, res) => {
     if (!result) {                                                               // Se o usuário não existir, retornar uma mensagem de erro com o código de status 404 (Not Found)
       return res.status(404).json({ message: "Usuário não encontrado. 🔍" });
     }
+    console.log(`Atenção o Usuário ID "${req.params.id}" foi excluido.`)
     res.status(200).json({ message: "👋 Usuário excluído com sucesso. 👋" });
   }
   catch (error) {
