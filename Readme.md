@@ -25,31 +25,7 @@ DB_DIALECT=mysql
 ```
 
 - Rotas para testes
-- get: localhost:3000/users
-  -  retorna todos usuários cadastrados no banco de dados 
-- get: localhost:3000/users/1
-  - retorna o usuário de id  ' 1 ' 
-- post : localhost:3000/users
-  - post no formato json, preencher os dados igual abaixo e fazer o request:
-  ```
-  {
-    "username": "teste",
-    "email": "jxohn.doe2@example.com",
-    "password": "pasx2sword123"
-  }
-  ```
-  
-- delete: localhost:3000/users/1  
-  - deleta o usuario exemplo id ' 1' 
-- put : localhost:3000/users/1     
-  - atualiza os dados do usuário id ' 1 '   
-  ```
-  {
-    "username": "teste2",
-    "email": "test2@example.com",
-    "password": "1pasx2sword123"
-  }
-  ```
+  - Disponibilizado as rotas no arquivo Routes-isomnia na raiz do projeto,  basta importar para seu insomnia e testar as rotas criadas até o momento
 
 - todos os detalhes do desenvolvimento vai ficar no meu blog para evitar ter aqui um readme muito grande.
 - https://fbs-blog.netlify.app/projeto-de-ecommerce-backend-com-node-js-banco-de-dados-sql/
