@@ -5,7 +5,7 @@ const Product = require('../models/Product');
 const ProductController = {
   createProduct: async (req, res) => {            // createProduct não precisa importar validationUtils igual o createUser de UserController.js a logica de validação já está no proprio codigo                              
     try {
-      const { name, price, description, quantity } = req.body;
+      const { name, price, description, CategoryName, quantity } = req.body;
       const produtoJaExiste = await Product.findOne({ where: { name } });         // validador verifica se o produto ja existe pelo nome
       if (produtoJaExiste) {                                                      // se produto ja existe adiciona a quantidade de produtos inserida no post
         const updatedQuantity = parseInt(quantity, 10) || 1;                      // se ao cadastrar o produto nao inserir a quantidade , vai adicionar 1 de quantidade toda vez
@@ -18,6 +18,7 @@ const ProductController = {
         name,
         price,
         description,
+        CategoryName,
         quantity: quantity || 1                                                     // quantidade ou 1  ,  ou ele cadastra a quantidade definida no cadastrou ou se for cadastrado com quantidade 0 ele cadastrar com quantidade 1 , nao pode haver 0 produtos
       });
       const savedProduct = await newProduct.save();
@@ -25,7 +26,7 @@ const ProductController = {
       res.status(201).json(savedProduct);
     }
     catch (error) {
-      res.status(401).json({ error: error.message });
+      res.status(400).json({ error: " Não Foi Possivel Cadastrar o Produto, Verifique a Categoria" });
     }
   },
   // Método para obter todos os produtos
@@ -35,7 +36,7 @@ const ProductController = {
       res.status(200).json(products);                                                 // Retornar os produtos obtidos como resposta
     }
     catch (error) {
-      res.status(401).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   },
   // Método para obter um produto pelo seu ID
@@ -50,7 +51,7 @@ const ProductController = {
       res.status(200).json(product);                                                  // Retornar o produto encontrado como resposta
     }
     catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   },
   // Método para atualizar um produto pelo seu ID
@@ -63,11 +64,12 @@ const ProductController = {
         return res.status(404).json({ error: "Produto não encontrado" });                // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
       }
 
-      const { quantity, price, description } = req.body;                                 // Extrair dados do corpo da requisição , como regra de negocio o nome nao pode ser alterado.
+      const { quantity, price, description, CategoryName } = req.body;                                 // Extrair dados do corpo da requisição , como regra de negocio o nome nao pode ser alterado.
 
       product.quantity = quantity;                                                       // Atualizar os dados do produto encontrado com os novos dados fornecidos
       product.price = price;
       product.description = description;
+      product.CategoryName = CategoryName;
 
       const updatedProduct = await product.save();
       console.log(`Atenção os Dados do Produto ID "${req.params.id}" Foram Atualizados.`)                                       // Salvar as alterações no produto no banco de dados
@@ -87,7 +89,7 @@ const ProductController = {
       res.status(200).json({ message: "Produto Excluido com Sucesso." });
     }
     catch (error) {
-      res.status(401).json({ error: error.message });
+      res.status(400).json({ error: error.message });
     }
   }
 };

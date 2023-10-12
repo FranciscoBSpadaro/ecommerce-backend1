@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database');
+const Category = require('../models/Category');
 
 const Product = db.define('products', {
   id: {
@@ -23,11 +24,21 @@ const Product = db.define('products', {
     type: Sequelize.INTEGER,
     allowNull: false,
     defaultValue: 0
+  },
+  CategoryName: {
+    type: Sequelize.STRING(25),
+    allowNull: false,
+    references: {
+        model: Category,
+        key: 'CategoryName'
+    }
   }
 });
 
+Product.belongsTo(Category, { foreignKey: 'CategoryName' });
+
 // Sincroniza o modelo com o banco de dados e cria a tabela de produto automaticamente
-Product.sync()
+db.sync()
   .then(() => {
     console.log('🤖 Tabela de Produtos Criada com sucesso! ✔');
   })

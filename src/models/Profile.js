@@ -3,6 +3,11 @@ const db = require('../config/database');
 const User = require('../models/User');
 
 const Profile = db.define('profiles', {
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
     nome: {
         type: Sequelize.STRING(45),
         allowNull: true,

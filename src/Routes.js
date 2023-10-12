@@ -31,6 +31,14 @@ routes.get('/profiles/:username', ProfileController.getProfileByUsername);
 routes.put('/profiles/:username', ProfileController.updateProfileByUsername);
 routes.delete('/profiles/:id', ProfileController.deleteProfileById);
 
+const CategoryController = require('./controllers/CategoryController')
+
+routes.post('/categories', CategoryController.createCategory);
+routes.get('/categories', CategoryController.getAllCategories);
+routes.get('/categories/:id', CategoryController.getCategoryById);
+routes.put('/categories/:id', CategoryController.updateCategory);
+
+routes.delete('/categories/:id', CategoryController.deleteCategory);
 
 
 module.exports = routes;
