@@ -12,7 +12,7 @@ const Category = db.define('Category', {
         type: Sequelize.STRING(25),
         allowNull: false,
         primaryKey: true,
-        unique: false,
+        unique: true,
         validate: {
             len: [1, 25]
         }
