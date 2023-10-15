@@ -1,5 +1,5 @@
 ### Projeto de E-commerce Backend com Node.js, Banco de Dados SQL.
-#### Work in progress , quem quiser fazer o código junto pode fazer pull request
+#### Work in progress
 
 - O Objetivo é criar uma API para um projeto de e-commerce utilizando Node.js, MySQL para armazenar os dados e alguns módulos como o Express, Sequelize, MySQL2 e Bcrypt.
 1. Setup do Ambiente

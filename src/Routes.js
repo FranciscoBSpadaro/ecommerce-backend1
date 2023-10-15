@@ -40,5 +40,18 @@ routes.put('/categories/:id', CategoryController.updateCategory);
 
 routes.delete('/categories/:id', CategoryController.deleteCategory);
 
+const CartController = require('./controllers/CartController')
+
+routes.post('/carts', CartController.addToCart);
+routes.get('/carts', CartController.getCart);
+routes.put('/carts/:id', CartController.updateCartItem);
+
+
+const OrderController = require('./controllers/OrderController')
+
+routes.post('/ordens', OrderController.createOrder);
+routes.get('/ordens/:id', OrderController.getOrdersByUserName);
+routes.delete('/ordens/:id', OrderController.deleteOrder);
+
 
 module.exports = routes;

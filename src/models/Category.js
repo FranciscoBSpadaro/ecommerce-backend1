@@ -8,10 +8,9 @@ const Category = db.define('Category', {
         autoIncrement: true,
     },
 
-    CategoryName: {
+    categoryName: {
         type: Sequelize.STRING(25),
         allowNull: false,
-        primaryKey: true,
         unique: true,
         validate: {
             len: [1, 25]
