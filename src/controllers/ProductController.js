@@ -3,27 +3,29 @@ const Product = require('../models/Product');
 
 
 const ProductController = {
-  createProduct: async (req, res) => {            // createProduct não precisa importar validationUtils igual o createUser de UserController.js a logica de validação já está no proprio codigo                              
+  createProduct: async (req, res) => {                     
     try {
       const { productName, price, description, categoryId, quantity } = req.body;
-      const produtoJaExiste = await Product.findOne({ where: { productName } });         // validador verifica se o produto ja existe pelo nome
-      if (produtoJaExiste) {                                                      // se produto ja existe adiciona a quantidade de produtos inserida no post
-        const updatedQuantity = parseInt(quantity, 10) || 1;                      // se ao cadastrar o produto nao inserir a quantidade , vai adicionar 1 de quantidade toda vez
-        produtoJaExiste.quantity += updatedQuantity;                              // parseInt(quantity, 10) o numero 10 representa a base decimal de parseInt  para garantir que o número seja interpretado como um decimal
+      let produtoJaExiste = await Product.findOne({ where: { productName } });          // validador verifica se o produto ja existe pelo nome
+      if (!produtoJaExiste) {                                                           // se produto não  existe ' false'  cria o produto ,  se 'true/existe' pula para o else e atualiza a quantidade
+        const newProduct = new Product({
+          productName,
+          price,
+          description,
+          categoryId,
+          quantity: quantity || 1                                                         // quantidade ou 1  ,  ou ele cadastra a quantidade definida no cadastro ou se for cadastrado com quantidade 0 ele cadastrar com quantidade 1
+        });
+        const savedProduct = await newProduct.save();
+        console.log(savedProduct)
+        res.status(201).json(savedProduct);
+      }
+      else {
+        let updatedQuantity = parseInt(quantity, 10) || 1;                                // parseInt(quantity, 10) o numero 10 representa a base decimal de parseInt  para garantir que o número seja interpretado como um decimal
+        produtoJaExiste.quantity += updatedQuantity;                                      // se ao cadastrar o produto nao inserir a quantidade , vai adicionar 1 de quantidade toda vez
         await produtoJaExiste.save();
         console.log(produtoJaExiste)
         return res.status(200).json({ message: `⚠ O Produto ${produtoJaExiste.productName} já está cadastrado. A quantidade de itens foi atualizada para ${produtoJaExiste.quantity}. ⚠` });
       }
-      const newProduct = new Product({
-        productName,
-        price,
-        description,
-        categoryId,
-        quantity: quantity || 1                                                     // quantidade ou 1  ,  ou ele cadastra a quantidade definida no cadastrou ou se for cadastrado com quantidade 0 ele cadastrar com quantidade 1 , nao pode haver 0 produtos
-      });
-      const savedProduct = await newProduct.save();
-      console.log(savedProduct)
-      res.status(201).json(savedProduct);
     }
     catch (error) {
       res.status(400).json({ error: " Não Foi Possivel Cadastrar o Produto, Verifique a Categoria" });
@@ -32,7 +34,7 @@ const ProductController = {
   // Método para obter todos os produtos
   getAllProducts: async (req, res) => {
     try {
-      const products = await Product.findAll();                                       // Obter todos os produtos do banco de dados
+      let products = await Product.findAll();                                       // Obter todos os produtos do banco de dados
       res.status(200).json(products);                                                 // Retornar os produtos obtidos como resposta
     }
     catch (error) {
@@ -43,7 +45,7 @@ const ProductController = {
   getProductById: async (req, res) => {
     try {
       const { id } = req.params;                                                      // Obter o ID do produto a partir dos parâmetros da requisição
-      const product = await Product.findByPk(id);                                     // Buscar o produto no banco de dados pelo seu ID
+      let product = await Product.findByPk(id);                                     // Buscar o produto no banco de dados pelo seu ID
 
       if (!product) {                                                                 // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
         return res.status(404).json({ error: "Produto não encontrado" });
@@ -58,7 +60,7 @@ const ProductController = {
   updateProductById: async (req, res) => {
     try {
       const { id } = req.params;
-      const product = await Product.findByPk(id);
+      let product = await Product.findByPk(id);
 
       if (!product) {                                                                    // Verificar se o produto foi encontrado
         return res.status(404).json({ error: "Produto não encontrado" });                // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
@@ -71,7 +73,7 @@ const ProductController = {
       product.description = description;
       product.categoryId = categoryId;
 
-      const updatedProduct = await product.save();
+      let updatedProduct = await product.save();
       console.log(`Atenção os Dados do Produto ID "${req.params.id}" Foram Atualizados.`)                                       // Salvar as alterações no produto no banco de dados
       res.status(200).json(updatedProduct);                                              // Retornar o produto atualizado como resposta
     } catch (error) {
@@ -81,7 +83,7 @@ const ProductController = {
   // Método para excluir um produto pelo seu ID
   deleteProductById: async (req, res) => {
     try {
-      const deletedProduct = await Product.destroy({ where: { id: req.params.id } });      // Excluir o produto do banco de dados pelo seu ID
+      let deletedProduct = await Product.destroy({ where: { id: req.params.id } });      // Excluir o produto do banco de dados pelo seu ID
       if (!deletedProduct) {                                                               // Verificar se o produto foi encontrado e excluído
         return res.status(404).json({ error: "Produto não encontrado" });                  // Se o produto não foi encontrado, retornar uma resposta com status 404
       }

@@ -1,6 +1,5 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const Cart = require('../models/Cart');
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
@@ -13,15 +12,15 @@ exports.createOrder = async (req, res) => {
             return res.status(400).json({ errors: errors.array() });
         }
 
-        const { id, products } = req.body;
+        const { userId, products } = req.body;
 
         // Verifica se o usuário existe
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(userId);                  // acho melhor colocar essa função no cart.
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        // Verifica se os produtos existem e estão disponíveis em estoque
+        // Verifica se os produtos existem e estão disponíveis em estoque          // acho melhor colocar essa função no cart.
         const productsIds = products.map(product => product.id);
         const availableProducts = await Product.findAll({
             where: { id: productsIds, stock: { $gt: 0 } }
@@ -76,40 +75,60 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: error.message });
     }
 };
+exports.getAllOrders = async (req, res) => {                                                              
+    try {
+        let orders = await Order.findAll();                                                  
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(400).json({ message: 'Ocorreu um erro ao listar os ordens de compras.' });
+    }
+},
 
 // Função para obter os pedidos de um usuário
 exports.getOrdersByUserName = async (req, res) => {
     try {
         const username = req.params.username;
-
-        // Verifica se o usuário existe
-        const user = await User.findByPk(username);
-        if (!user) {
+        let user = await User.findByPk(username);         // Verifica se o usuário existe        
+        if (!user) {                  
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
-
-        // Obtém os pedidos do usuário
-        const orders = await Order.findAll({ where: { username } });
-
-        return res.status(200).json({ orders });
+        else {
+            let orders = await Order.findOne();                                                  
+            res.status(200).json(orders);
+        }
     } catch (error) {
         console.log(error);
-        return res.status(400).json({ message: 'Erro interno do servidor' });
+        return res.status(400).json({ message: message.error });
     }
 };
 
+exports.updateOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, quantity } = req.body
+
+        await Order.update({ status, quantity }, { where: { id } });                    
+        res.status(200).json({ message: 'Ordem de compra atualizada com sucesso' });
+    }
+
+    catch (error) {
+        console.log(error);
+        return res.status(400).json({ message: message.error });
+    }
+};
 
 exports.deleteOrder = async (req, res) => {
     try {
         const username = req.params.username;
 
-        await Cart.destroy({ where: { username } });
+        await Order.destroy({ where: { username } });
 
         return res.status(200).json({ message });
     }
 
     catch (error) {
         console.log(error);
-        return res.status(400).json({ message: 'Erro interno do servidor' });
+        return res.status(400).json({ message: message.error });
     }
 };
