@@ -10,9 +10,9 @@ const CartController = {  // se comparar findOrCreateCart com o createProduct de
                 cart = await Cart.save({ userId, productId, quantity });                      // Cria um novo carrinho de compras com os dados fornecidos
                 res.status(201).json({ message: `Carrinho de Compras Criado` });
             } else {                                                                          // se carrinho ja existe entao atualiza a quantidade de itens
-                const updatedCart = parseInt(quantity, 10) || 1;                    
-                cart.quantity += updatedCart;                                                         
-                await cart.save(); 
+                const updatedCart = parseInt(quantity, 10) || 1;
+                cart.quantity += updatedCart;
+                await cart.save();
                 console.log(cart)                                                              // Salva as alterações no carrinho
                 res.status(200).json({ message: `A quantidade de produtos do carrinho foi atualizada para ${cart.quantity}.` });
             }

@@ -5,6 +5,7 @@ const UserController = require('./controllers/UserController');  // importando c
 
 //define as rotas de usuários.
 routes.post('/users', UserController.createUser);
+routes.post('/users/login', UserController.loginUser);
 routes.get('/users', UserController.getAllUsers);
 routes.get('/users/:id', UserController.getUsersbyID);
 routes.put('/users/:id', UserController.updateUserEmail);

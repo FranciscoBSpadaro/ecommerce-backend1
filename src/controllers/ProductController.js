@@ -3,7 +3,7 @@ const Product = require('../models/Product');
 
 
 const ProductController = {
-  createProduct: async (req, res) => {                     
+  createProduct: async (req, res) => {
     try {
       const { productName, price, description, categoryId, quantity } = req.body;
       let produtoJaExiste = await Product.findOne({ where: { productName } });          // validador verifica se o produto ja existe pelo nome

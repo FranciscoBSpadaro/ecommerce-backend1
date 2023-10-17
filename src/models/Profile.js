@@ -7,7 +7,7 @@ const Profile = db.define('profiles', {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
-      },
+    },
     nome: {
         type: Sequelize.STRING(45),
         allowNull: true,
@@ -43,7 +43,7 @@ const Profile = db.define('profiles', {
 Profile.belongsTo(User, { foreignKey: 'username' });
 
 db.sync()
-    .then(async () => {
+    .then(() => {
         console.log('🤖 Tabela de Profiles Criada com Sucesso! ✔');
     })
     .catch((err) => console.log('Erro ao Sincronizar Banco de Dados! 😥:', err));
