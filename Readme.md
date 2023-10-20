@@ -30,8 +30,8 @@ JWT_TIME=1h
   - Disponibilizado as rotas no arquivo Routes-isomnia na raiz do projeto,  basta importar para seu insomnia e testar as rotas criadas até o momento
   - Update , adicionado express-validator jsonwebtoken e express-jwt
 
-  ```
-  Para adicionar o `jsonwebtoken` em uma requisição POST no Insomnia, você precisa seguir os seguintes passos:
+
+- Para adicionar o `jsonwebtoken` em uma requisição POST no Insomnia, você precisa seguir os seguintes passos:
 
 1. Abra o Insomnia e selecione a requisição POST que deseja adicionar o `jsonwebtoken`.
 2. Clique na aba "Headers" na parte inferior da tela.
@@ -42,10 +42,12 @@ JWT_TIME=1h
 
 Certifique-se de substituir "[seu_token_jwt_aqui]" pelo seu token JWT válido. Com isso, o `jsonwebtoken` será adicionado à sua requisição POST no Insomnia.
 
-ao executar rotas de login o console.log vai exibir o codigo do token que pode ser copiado e adicionado ao HEADER
-  ```
-  mas ja adicionei no arquivo Routes-Insomnia
+ - Quando é requisitado a rota de login o console.log vai exibir a hash do token que pode ser copiado e adicionado ao HEADER
+  -  JWT_TIME=1h  1 hora é o tempo que o token expira nesse exemplo.
+  -  JWT_SECRET=MinhaSenhaSecretSuperSecreta1xX!@   é um exemplo de senha para JWToken fazer a hash do token de login
 
-- todos os detalhes do desenvolvimento vai ficar no meu blog para evitar ter aqui um readme muito grande.
+
+- Todos os detalhes do desenvolvimento vai ficar no meu blog para evitar ter aqui um readme muito grande.
+- Acompanhe o historico de commits para entender a evolução do codigo. 
 - https://fbs-blog.netlify.app/projeto-de-ecommerce-backend-com-node-js-banco-de-dados-sql/
-- acompanhe o historico de commits para entender a evolução do codigo. 
+
