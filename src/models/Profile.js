@@ -15,7 +15,14 @@ const Profile = db.define('profiles', {
             len: [1, 45]
         }
     },
-    sobrenome: {
+    meioNome: {
+        type: Sequelize.STRING(45),
+        allowNull: true,
+        validate: {
+            len: [1, 45]
+        }
+    },
+    ultimoNome: {
         type: Sequelize.STRING(45),
         allowNull: true,
         validate: {

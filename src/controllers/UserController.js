@@ -1,106 +1,132 @@
-// Importar o modelo de usuário
-const User = require("../models/User");                                                // importando o modelo User.js
+const User = require("../models/User");                                   // Importa o modelo do usuário
+const passwordUtils = require('../utils/passwordUtils');                  // Importa funções úteis do bcrypt para lidar com senhas
+const jwt = require('jsonwebtoken');                                      // Importa a biblioteca de geração de tokens JWT
+const { validationResult } = require('express-validator');                // Importa a função de validação de entrada
 
-const passwordUtils = require('../utils/passwordUtils');                               // importando o arquivo de configurações do bcrypt 
-
-
-
-// Função para criar usuários
-exports.createUser = async (req, res) => {
-  try {
-    const { username, password } = req.body;                                           // variável para validar usarios pelo username cadastro no db                                     // variável para criar um novo usuário utilizando o bcrypt para criptografar as senhas no banco de dados
-    let userAlreadyExists = await User.findOne({ where: { username } });               // variável que instancia o validationUtils.ja e verifica se o usuário já está cadastrado
-    if (!userAlreadyExists) {                                                          // se username já é cadastrado retorna erro 400
-      const hashedPassword = await passwordUtils.hashPassword(password);               // variável que instancia o bcrypt passwordUtils.js
-      let user = new User({ ...req.body, password: hashedPassword });                  // convertendo senha digitada pelo usuário em senha criptografada
-      let newUser = await user.save();                                                 // cadastra o usuário no db com a senha criptografada , uso o metodo save porque precisou consultar o banco de dados primeiro antes de pode salvar diferente do metodo .create que nao consulta. 
-      console.log(newUser)
-      res.status(201).json({ message: `🤖 O Usuário ${username}, foi Cadastrado com Sucesso! 🤖` }); // se remover a 'mensagem' e add newUser retorna todo o res.status
-    }
-    else res.status(400).json({ message: `⚠ O Usuário ${username} já está cadastrado ⚠` });
+const handleValidationErrors = (req, res, next) => {                      // Middleware para lidar com erros de validação
+  const errors = validationResult(req);                                   // Obtém os erros de validação da requisição
+  if (!errors.isEmpty()) {                                                // se nao estiver vazio e houver erros execute o codigo abaixo com array de erros.
+    return res.status(400).json({ errors: errors.array() });              // Retorna uma resposta com erro 400 se houver erros de validação
   }
-  catch (error) {
+  next();
+};
+
+const handle404Error = (res, message) => {                                // Função utilitária para lidar com erros 404 para o array
+  return res.status(404).json({ message: `${message} 🔍` });              // Retorna uma resposta com erro 404 e uma mensagem personalizada
+};
+
+const handle400Error = (res, message) => {
+  return res.status(400).json({ message });
+};
+
+const handle401Error = (res, message) => {
+  return res.status(401).json({ message });
+};
+
+exports.createUser = async (req, res) => {                                 // Rota para criar um novo usuário
+  try {
+    const { username, password, email } = req.body;                        // Obtém os dados do corpo da requisição
+    const userAlreadyExists = await User.findOne({ where: { username } }); // Verifica se o usuário já existe no banco de dados
+
+    if (userAlreadyExists) {
+      return handle400Error(res, `⚠ O Usuário ${username} já está cadastrado ⚠`); // Retorna uma resposta com erro 400 se o usuário já existir
+    }
+
+    const hashedPassword = await passwordUtils.hashPassword(password);     //  Gera um hash da senha com a função hashPassword do bcrypt
+    const user = await User.create({ username, email, password: hashedPassword }); // Cadastra o usuário no banco de dados com a senha criptografada
+
+    console.log(user);
+    res.status(201).json({ message: `🤖 O Usuário ${username}, foi Cadastrado com Sucesso! 🤖` });
+  } catch (error) {
     console.error(error);
-    res.status(400).json({ message: "⚠ E-mail inválido ou já cadastrado ⚠" });         // se colocar error.message ou apenas error vai aparecer como erro de validação de email
+    res.status(400).json({ message: "⚠ E-mail inválido ou já cadastrado ⚠" });
   }
 };
-// Função para realizar o login de usuário
-exports.loginUser = async (req, res) => {
+
+exports.loginUser = async (req, res) => {                                    // Rota para fazer login de um usuário
   try {
-    const { username, password } = req.body;
-    let user = await User.findOne({ where: { username } });
-    if (!user) {
-      res.status(400).json({ message: "⚠ Usuário não encontrado ⚠" });
+    const { username, password } = req.body;                                 // Obtém os dados do corpo da requisição
+    const user = await User.findOne({ where: { username } });                // Verifica se o usuário existe no banco de dados
+
+    if (!user) {                                                             // se resultado for diferente de um usuário retorna erro , 404
+      return handle404Error(res, "Usuário não encontrado.");
+    }
+
+    const passwordMatch = await passwordUtils.comparePasswords(password, user.password); // Verifica se a senha fornecida pelo usuário corresponde à senha armazenada e usa a função do bcrypt comparePassword e compara a senha criptografa
+
+    if (passwordMatch) {                                                      // se a senha for correta faz o login do usuário
+      console.log(`🔓 Login realizado com sucesso para o usuário ${username} 🔓`);
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {  //  Gera um token JWT válido por um período de tempo definido nas variáveis de ambiente
+        expiresIn: process.env.JWT_TIME
+      });
+      console.log(token);                                                     // printa o JWtoken no console.log apenas para usar esses tokens nos testes de api no insomnia , em produção esse console.log deve ser removido.
+      res.status(200).json({ message: `Login realizado com sucesso. 🔑🔓` });
     } else {
-      const passwordMatch = await passwordUtils.comparePasswords(password, user.password);       // compara a senha digitada com a senha criptografada no banco de dados com 'comparePasswords' do bcrypt
-      if (passwordMatch) {
-        res.status(200).json({ message: `🔓 Login realizado com sucesso para o usuário ${username} 🔓` });
-      } else {
-        res.status(401).json({ message: "⚠ Senha incorreta ⚠" });
-      }
+      handle401Error(res, "⚠ Senha incorreta ⚠");
     }
   } catch (error) {
     console.error(error);
-    res.status(400).json({ message: "⚠ Erro ao realizar o login ⚠" });
+    res.status(500).json({ message: error.message });
   }
 };
-// Função para atualizar um usuário pelo ID
-exports.updateUserEmail = async (req, res) => {
+
+exports.updateUserEmail = async (req, res) => {                             // Rota para atualizar e-mail do usuário
   try {
-    const { id } = req.params;                                                        // Adicionado o parâmetro da rota que devem ser atualizados no put ' id '
-    const { email } = req.body;                                                       // Adicionado o atributo do corpo da requisição que será atualizado 'email'
-    let updatedUser = await User.update(                                              // Função para atualizar os dados  de email, pelo id
-      { email },
-      { where: { id } }
-    );
-    if (updatedUser[0] === 0) {                                                       // Se nenhum usuário foi atualizado, devido a  id invalido apresenta erro 404
-      return res.status(404).json({ message: 'Usuário não encontrado. 🔍' });
+    const { id } = req.params;                                              // busca o id do usuario pela rota da requisição
+    const { email } = req.body;                                             // apenas o email é enviado no corpo da requisição
+
+    const [updatedRows] = await User.update({ email }, { where: { id } });  // Busca na tabela de usuários o atributo email pelo id
+    if (updatedRows === 0) {                                                // se retorna indice 0 não localizou registros pelo id e retorna erro 404
+      return handle404Error(res, 'Usuário não encontrado.');
     }
-    console.log(`E-mail do Usuário ID ${id} foi alterado para ${email}`)
-    res.status(200).json({ message: '🤖 E-mail Alterado com Sucesso. 🤖' });
-  }
-  catch (error) {
+
+    console.log(`User ID ${id} email atualizado para ${email}`);
+    res.status(200).json({ message: '🤖 E-mail Atualizado com Sucesso. 🤖' });
+  } catch (error) {
     console.error(error);
     res.status(400).json({ message: '⚠ E-mail inválido ou já cadastrado ⚠' });
   }
 };
-// Função para excluir um usuário pelo ID
-exports.deleteUser = async (req, res) => {
+
+exports.deleteUser = async (req, res) => {                                  // Rota para deletar um usuário
   try {
-    const result = await User.destroy({ where: { id: req.params.id } });              // Buscar o usuário com o ID fornecido no banco de dados e removê-lo
-    if (!result) {                                                                    // Se o usuário não existir, retornar uma mensagem de erro com o código de status 404 (Not Found)
-      return res.status(404).json({ message: "Usuário não encontrado. 🔍" });
+    const { id } = req.params;                                             // id deve ser fornecido pela rota da requisição
+
+    const deletedRows = await User.destroy({ where: { id } });            // deleta o usuário pelo id
+    if (deletedRows === 0) {                                              // se não encontra nenhum id retorna 404
+      return handle404Error(res, 'Usuário não encontrado.');
     }
-    console.log(`Atenção o Usuário ID "${req.params.id}" foi excluido.`)
+
+    console.log(`User ID "${id}" excluído.`);
     res.status(200).json({ message: "👋 Usuário excluído com sucesso. 👋" });
-  }
-  catch (error) {
-    res.status(401).json({ message: error.message });
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: error.message });                // erro 401 apenas um usuário autenticado pode fazer isso. se for adm
   }
 };
-// Função para buscar todos usuários os pelo id
-exports.getUsersbyID = async (req, res) => {
+
+exports.getUserByID = async (req, res) => {                           // Rota para localizar um usuário pelo id
   try {
-    const id = req.params.id;                                                       // obtém o ID da URL da requisição
-    let users = await User.findByPk(id);                                            // busca o usuário pelo ID que é uma Primary Key no DB
-    if (!users) {                                                                   // se o resultado for diferente de users então retorna erro 404
-      return res.status(404).json({ message: "Usuário não encontrado. 🔍" });
+    const { id } = req.params;                                       // id deve ser fornecido pela rota da requisição
+
+    const user = await User.findOne({ where: { id } });             // busca na tabela de usuários o id fornecido
+    if (!user) {                                                    // se nao retornar um usuário retorna erro 404
+      return handle404Error(res, 'Usuário não encontrado.');
     }
-    return res.json(users);
-  }
-  catch (error) {
+
+    return res.json(user);
+  } catch (error) {
     console.error(error);
-    return res.status(400).json({ message: error.message });
+    return res.status(401).json({ message: error.message });
   }
 };
-// Função para obter todos os usuários
-exports.getAllUsers = async (req, res) => {
+
+exports.getAllUsers = async (req, res) => {                    // busca todos os usuários cadastrados.
   try {
-    let users = await User.findAll();                                             // Buscar todos os usuários no banco de dados
-    res.status(200).json(users);                                                  // Retornar a lista de usuários em formato JSON
-  }
-  catch (error) {
+    const users = await User.findAll();
+    res.status(200).json(users);
+  } catch (error) {
     console.error(error);
-    res.status(401).json({ message: error.message });
+    res.status(401).json({ message: error.message });        // 401 somente adms
   }
 };

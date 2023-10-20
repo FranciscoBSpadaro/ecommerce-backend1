@@ -7,7 +7,7 @@ const CartController = {  // se comparar findOrCreateCart com o createProduct de
             const { userId, productId, quantity } = req.body;
             let cart = await Cart.findOne({ where: { userId } });                               // Procura um carrinho de compras existente para o usuário
             if (!cart) {                                                                        // se o carrinho não existir cria um novo
-                cart = await Cart.save({ userId, productId, quantity });                      // Cria um novo carrinho de compras com os dados fornecidos
+                cart = await Cart.create({ userId, productId, quantity });                      // Cria um novo carrinho de compras com os dados fornecidos
                 res.status(201).json({ message: `Carrinho de Compras Criado` });
             } else {                                                                          // se carrinho ja existe entao atualiza a quantidade de itens
                 const updatedCart = parseInt(quantity, 10) || 1;

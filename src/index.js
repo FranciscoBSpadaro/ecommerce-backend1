@@ -1,8 +1,17 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan')
+const cors = require('cors')
 
 // Configuração do middleware e do body parser
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*")
+  res.header("Access-Control-Allow-Methods", 'GET,PUT,POST,DELETE,OPTIONS')
+  app.use(cors())
+  next()
+})
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -12,6 +21,7 @@ const routes = require('./Routes');
 
 // Rotas
 app.use(routes);
+
 
 // Configuração da porta do servidor
 const PORT = process.env.PORT || 3000;

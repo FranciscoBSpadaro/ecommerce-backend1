@@ -4,7 +4,7 @@ const User = require('../models/User');
 const ProfileController = {
     createProfile: async (req, res) => {
         try {
-            const { nome, sobrenome, telefone, celular, username } = req.body;
+            const { nome, meioNome, ultimoNome, telefone, celular, username } = req.body;
             const user = await User.findOne({ where: { username } });                                             // Verificar se o usuário com o username já existe
             if (!user) {
                 return res.status(404).json({ error: 'Não existe um Cadastro de Usuário com esse username' });
@@ -15,7 +15,8 @@ const ProfileController = {
             }
             const profile = await Profile.create({                                                                  // Criar um novo perfil se não existe
                 nome,
-                sobrenome,
+                meioNome,
+                ultimoNome,
                 telefone,
                 celular,
                 username
