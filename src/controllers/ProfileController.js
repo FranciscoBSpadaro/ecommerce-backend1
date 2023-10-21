@@ -29,7 +29,7 @@ const ProfileController = {
         }
     },
 
-    getAllProfiles: async (req, res) => {
+    getAllProfiles: async (req, res) => { // Somente adm
         try {
             const profiles = await Profile.findAll();
             res.status(200).json(profiles);
@@ -38,7 +38,7 @@ const ProfileController = {
             res.status(401).json({ error: error.message });
         }
     },
-    deleteProfileById: async (req, res) => {
+    deleteProfileById: async (req, res) => {  // Somente adm
         try {
             const deletedProfile = await Profile.destroy({ where: { id: req.params.id } });
             if (!deletedProfile) {

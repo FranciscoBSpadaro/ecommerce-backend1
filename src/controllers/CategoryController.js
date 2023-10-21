@@ -1,7 +1,7 @@
 const Category = require('../models/Category');
 
 module.exports = {
-    async createCategory(req, res) {
+    async createCategory(req, res) { // somente adm
         try {
             const { categoryName, description } = req.body;
             if (!categoryName) {
@@ -30,7 +30,7 @@ module.exports = {
     },
     async getCategoryById(req, res) {
         try {
-            const { id } = req.params;
+            const id  = req.params;
             const category = await Category.findByPk(id);
 
             if (!category) {
@@ -44,9 +44,9 @@ module.exports = {
         }
     },
 
-    async updateCategory(req, res) {
+    async updateCategory(req, res) {  // somente adm
         try {
-            const { id } = req.params;
+            const id = req.params.id
             const { description } = req.body;
 
             const category = await Category.findByPk(id);
@@ -61,13 +61,13 @@ module.exports = {
         }
     },
 
-    async deleteCategory(req, res) {
+    async deleteCategory(req, res) { // somente adm
         try {
-            const { id } = req.params;
+            const id = req.params.id
             const category = await Category.findByPk(id);
 
             if (!category) {
-                return res.status(404).json({ error: 'Category not found' });
+                return res.status(404).json({ error: 'Categoria não encontrada, verifique o id' });
             }
             await category.destroy();
 
@@ -75,7 +75,7 @@ module.exports = {
             res.status(200).json({ message: "Categoria Excluido com Sucesso." });
         } catch (error) {
             console.error(error);
-            res.status(400).json({ error: 'Não foi possivel excluir a categoria, essa categoria possui produtos atribuidos.' });
+            res.status(400).json({ message: "Não foi possível excluir a categoria, verifique se possui produtos atribuidos."});
         }
     },
-};
+}; 

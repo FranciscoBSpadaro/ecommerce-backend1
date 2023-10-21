@@ -22,8 +22,13 @@ DB_USER=root
 DB_PASSWORD=senha
 DB_HOST=127.0.0.1
 DB_DIALECT=mysql
-JWT_SECRET=MinhaSenhaSecretSuperSecreta1xX!@
+JWT_SECRET=MinhaSenhaSecretSuperSecreta1xX
 JWT_TIME=1h
+NODE_ENV=dev
+PORT=3000
+ADM_PASS=admin
+ADM_NAME=admin
+ADM_EMAIL=admin@example.com
 ```
 
 - Rotas para testes
@@ -44,7 +49,8 @@ Certifique-se de substituir "[seu_token_jwt_aqui]" pelo seu token JWT válido. C
 
  - Quando é requisitado a rota de login o console.log vai exibir a hash do token que pode ser copiado e adicionado ao HEADER
   -  JWT_TIME=1h  1 hora é o tempo que o token expira nesse exemplo.
-  -  JWT_SECRET=MinhaSenhaSecretSuperSecreta1xX!@   é um exemplo de senha para JWToken fazer a hash do token de login
+  -  JWT_SECRET=MinhaSenhaSecretSuperSecreta1xX   é um exemplo de senha para JWToken fazer a hash do token de login
+  -  adicionado admin padrão
 
 
 - Todos os detalhes do desenvolvimento vai ficar no meu blog para evitar ter aqui um readme muito grande.

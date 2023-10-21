@@ -14,14 +14,17 @@ const handleValidationErrors = (req, res, next) => {                      // Mid
 const handle404Error = (res, message) => {                                // Função utilitária para lidar com erros 404 para o array
   return res.status(404).json({ message: `${message} 🔍` });              // Retorna uma resposta com erro 404 e uma mensagem personalizada
 };
+const handle403Error = (res, message) => {
+  return res.status(403).json({ message });
+};
+const handle401Error = (res, message) => {
+  return res.status(401).json({ message });
+};
 
 const handle400Error = (res, message) => {
   return res.status(400).json({ message });
 };
 
-const handle401Error = (res, message) => {
-  return res.status(401).json({ message });
-};
 
 exports.createUser = async (req, res) => {                                 // Rota para criar um novo usuário
   try {
@@ -43,39 +46,43 @@ exports.createUser = async (req, res) => {                                 // Ro
   }
 };
 
-exports.loginUser = async (req, res) => {                                    // Rota para fazer login de um usuário
+exports.loginUser = async (req, res) => {                                   // adicionar chaves para o início e fim do bloco try-catch
   try {
-    const { username, password } = req.body;                                 // Obtém os dados do corpo da requisição
-    const user = await User.findOne({ where: { username } });                // Verifica se o usuário existe no banco de dados
+    const { username, password } = req.body;                                // corrigir a forma como os dados são obtidos do corpo da requisição
+    const user = await User.findOne({ where: { username } });               // corrigir a forma como o objeto de busca é passado ao método findOne
 
-    if (!user) {                                                             // se resultado for diferente de um usuário retorna erro , 404
+    if (!user)                                                              // adicionar chaves para o bloco condicional
       return handle404Error(res, "Usuário não encontrado.");
-    }
 
-    const passwordMatch = await passwordUtils.comparePasswords(password, user.password); // Verifica se a senha fornecida pelo usuário corresponde à senha armazenada e usa a função do bcrypt comparePassword e compara a senha criptografa
+    const passwordMatch = await passwordUtils.comparePasswords(password, user.password);
 
-    if (passwordMatch) {                                                      // se a senha for correta faz o login do usuário
+    if (passwordMatch) {                                                    // se a senha for correta faz o login
       console.log(`🔓 Login realizado com sucesso para o usuário ${username} 🔓`);
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {  //  Gera um token JWT válido por um período de tempo definido nas variáveis de ambiente
-        expiresIn: process.env.JWT_TIME
-      });
-      console.log(token);                                                     // printa o JWtoken no console.log apenas para usar esses tokens nos testes de api no insomnia , em produção esse console.log deve ser removido.
+      const token = jwt.sign({                                              // gerar JWToken ao usuário
+        username: user.username,
+        isAdmin: user.isAdmin                                               // adiciona no token o atributo isAdmin do usuario para verificar se é um adm quando as rotas forem executadas                                   
+      },
+        process.env.JWT_SECRET,                                             // senha do token definida no variável de ambiente
+        {
+          expiresIn: process.env.JWT_TIME                                   // tempo de expiraçao do token definido na variável de ambiente
+        });
+      console.log(token);
       res.status(200).json({ message: `Login realizado com sucesso. 🔑🔓` });
     } else {
       handle401Error(res, "⚠ Senha incorreta ⚠");
     }
-  } catch (error) {
+  } catch (error) {                                                         // adicionar chaves para o bloco catch
     console.error(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });                       // corrigir a forma como o objeto de resposta é estruturado
   }
 };
 
 exports.updateUserEmail = async (req, res) => {                             // Rota para atualizar e-mail do usuário
   try {
-    const { id } = req.params;                                              // busca o id do usuario pela rota da requisição
+    const id = req.params;                                                  // busca o id do usuario pela rota da requisição
     const { email } = req.body;                                             // apenas o email é enviado no corpo da requisição
 
-    const [updatedRows] = await User.update({ email }, { where: { id } });  // Busca na tabela de usuários o atributo email pelo id
+    const [updatedRows] = await User.update({ email }, { where: id });      // Busca na tabela de usuários o atributo email pelo id
     if (updatedRows === 0) {                                                // se retorna indice 0 não localizou registros pelo id e retorna erro 404
       return handle404Error(res, 'Usuário não encontrado.');
     }
@@ -87,46 +94,53 @@ exports.updateUserEmail = async (req, res) => {                             // R
     res.status(400).json({ message: '⚠ E-mail inválido ou já cadastrado ⚠' });
   }
 };
-
-exports.deleteUser = async (req, res) => {                                  // Rota para deletar um usuário
+// Rota ADM
+exports.deleteUser = async (req, res) => {
   try {
-    const { id } = req.params;                                             // id deve ser fornecido pela rota da requisição
+    const id = req.params.id;
 
-    const deletedRows = await User.destroy({ where: { id } });            // deleta o usuário pelo id
-    if (deletedRows === 0) {                                              // se não encontra nenhum id retorna 404
+    const userToDelete = await User.findByPk(id);
+    if (!userToDelete) {                                                 // Verifica se o usuário existe
       return handle404Error(res, 'Usuário não encontrado.');
     }
 
-    console.log(`User ID "${id}" excluído.`);
+    if (userToDelete.isAdmin == 1) {                                    // verifica se o usuário é um admin
+      return handle403Error(res, "Não é possível excluir um usuário administrador.");
+    }
+
+    const deletedRows = await User.destroy({ where: { id } });
+    if (deletedRows === 0) {                                           // se retornar indice 0 significa que não excluiu nenhum usuário , esse if é apenas uma camada adicional de validação
+      return handle404Error(res, 'Nenhum usuário foi excluido');
+    }
+    console.log(`User ID "${id}" excluído.`);                         // confirma exclusão
     res.status(200).json({ message: "👋 Usuário excluído com sucesso. 👋" });
   } catch (error) {
     console.error(error);
-    res.status(401).json({ message: error.message });                // erro 401 apenas um usuário autenticado pode fazer isso. se for adm
+    res.status(401).json({ message: error.message });
   }
 };
 
-exports.getUserByID = async (req, res) => {                           // Rota para localizar um usuário pelo id
+// ROTA ADM
+exports.getUserByID = async (req, res) => {
   try {
-    const { id } = req.params;                                       // id deve ser fornecido pela rota da requisição
-
-    const user = await User.findOne({ where: { id } });             // busca na tabela de usuários o id fornecido
-    if (!user) {                                                    // se nao retornar um usuário retorna erro 404
+    const id = req.params;                                             // define objeto de id pela rota da requisição                      
+    const user = await User.findOne({ where: id });                    // busca na tabela de Usuários o id fornecido                 
+    if (!user)                                                         // se não houver usuários com o id fornecido retorna erro 404         
       return handle404Error(res, 'Usuário não encontrado.');
-    }
 
-    return res.json(user);
+    return res.json(user);                                              // retorna dados do usuário
   } catch (error) {
     console.error(error);
     return res.status(401).json({ message: error.message });
   }
 };
-
-exports.getAllUsers = async (req, res) => {                    // busca todos os usuários cadastrados.
+// ROTA ADM
+exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll();                                  // busca todos os usuários no banco de dados
     res.status(200).json(users);
   } catch (error) {
     console.error(error);
-    res.status(401).json({ message: error.message });        // 401 somente adms
+    res.status(401).json({ message: error.message });
   }
 };

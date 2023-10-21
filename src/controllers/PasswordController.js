@@ -2,7 +2,8 @@ const User = require("../models/User");
 
 const passwordUtils = require('../utils/passwordUtils');  // importando o arquivo de configurações do bcrypt 
 
-exports.updateUserPassword = async (req, res) => {
+const PasswordController = {
+  updateUserPassword: async (req, res) => {
     try {
       // Adicionando os parametros que devem ser atualizados no put
       const { id } = req.params;
@@ -23,4 +24,7 @@ exports.updateUserPassword = async (req, res) => {
       console.error(error);
       res.status(500).json({ message: 'Erro interno do servidor 😱🤯' });
     }
-  };
+  }
+}
+
+module.exports = PasswordController

@@ -32,10 +32,11 @@ const CartController = {  // se comparar findOrCreateCart com o createProduct de
     },
     updateCartItem: async (req, res) => {                                                       // Função para atualizar a quantidade de um produto no carrinho
         try {
-            const { id } = req.params;
+            const id  = req.params.id
             const { quantity, productId } = req.body;
-            if (!productId) {                                                                    // Verificar se o produto foi encontrado
-                return res.status(404).json({ error: "Produto não encontrado" });
+            const cart = await Cart.findOne({ where: { id } });     
+            if (!cart) {                                                                    // Verificar se o produto foi encontrado
+                return res.status(404).json({ error: "Carrinho Não Localizado" });
             }
             await Cart.update({ quantity, productId }, { where: { id } });                       // Atualiza a quantidade de um produto no carrinho
             res.status(200).json({ message: 'Item do carrinho atualizado com sucesso' });

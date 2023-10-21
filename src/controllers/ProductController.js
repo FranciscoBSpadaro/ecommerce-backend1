@@ -1,8 +1,37 @@
 const Product = require('../models/Product');
 
 const ProductController = {
-  // Método um novo produto
-  createProduct: async (req, res) => {
+  // Método para obter todos os produtos
+  getAllProducts: async (req, res) => {
+    try {
+      // Obter todos os produtos do banco de dados
+      let products = await Product.findAll();
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  },
+  // Método para obter um produto pelo seu ID
+  getProductById: async (req, res) => {
+    try {
+      // Obter o ID do produto a partir dos parâmetros da requisição
+      const id = req.params;
+
+      // Buscar o produto no banco de dados pelo seu ID
+      let product = await Product.findByPk(id);
+
+      if (!product) {
+        // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
+        return res.status(404).json({ error: "Produto não encontrado" });
+      }
+
+      res.status(200).json(product);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  },
+  // ADM Criar Produto
+  createProduct: async (req, res) => { 
     try {
       // Extrair dados do corpo da requisição
       const { productName, price, description, categoryId, quantity } = req.body;
@@ -35,42 +64,10 @@ const ProductController = {
       res.status(400).json({ error: "Não Foi Possivel Cadastrar o Produto, Verifique a Categoria" });
     }
   },
-
-  // Método para obter todos os produtos
-  getAllProducts: async (req, res) => {
-    try {
-      // Obter todos os produtos do banco de dados
-      let products = await Product.findAll();
-      res.status(200).json(products);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  },
-
-  // Método para obter um produto pelo seu ID
-  getProductById: async (req, res) => {
-    try {
-      // Obter o ID do produto a partir dos parâmetros da requisição
-      const { id } = req.params;
-
-      // Buscar o produto no banco de dados pelo seu ID
-      let product = await Product.findByPk(id);
-
-      if (!product) {
-        // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
-        return res.status(404).json({ error: "Produto não encontrado" });
-      }
-
-      res.status(200).json(product);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  },
-
-  // Método para atualizar um produto pelo seu ID
+  //ADM atualizar um produto pelo seu ID
   updateProductById: async (req, res) => {
     try {
-      const { id } = req.params;
+      const id  = req.params.id
       let product = await Product.findByPk(id);
 
       if (!product) {
@@ -94,12 +91,11 @@ const ProductController = {
       res.status(400).json({ message: "Não foi possivel atualizar os dados desse produto, verifique a Categoria." });
     }
   },
-
-  // Método para excluir um produto pelo seu ID
+  // ADM  excluir um produto pelo seu ID
   deleteProductById: async (req, res) => {
     try {
       // Excluir o produto do banco de dados pelo seu ID
-      let deletedProduct = await Product.destroy({ where: { id: req.params.id } });
+      const deletedProduct = await Product.destroy({ where: { id: req.params.id } });
 
       if (!deletedProduct) {
         // Se o produto não foi encontrado, retornar uma resposta com status 404
@@ -112,6 +108,9 @@ const ProductController = {
       res.status(400).json({ error: error.message });
     }
   }
+
 };
+
+
 
 module.exports = ProductController;

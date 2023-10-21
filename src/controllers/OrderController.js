@@ -77,7 +77,7 @@ exports.createOrder = async (req, res) => {
 };
 exports.getAllOrders = async (req, res) => {                                                              
     try {
-        let orders = await Order.findAll();                                                  
+        const orders = await Order.findAll();                                                  
         res.status(200).json(orders);
     } catch (error) {
         console.error('Error:', error);
@@ -89,12 +89,12 @@ exports.getAllOrders = async (req, res) => {
 exports.getOrdersByUserName = async (req, res) => {
     try {
         const username = req.params.username;
-        let user = await User.findByPk(username);         // Verifica se o usuário existe        
+        const user = await User.findByPk(username);         // Verifica se o usuário existe        
         if (!user) {                  
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
         else {
-            let orders = await Order.findOne();                                                  
+            const orders = await Order.findOne();                                                  
             res.status(200).json(orders);
         }
     } catch (error) {
