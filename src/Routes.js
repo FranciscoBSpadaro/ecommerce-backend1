@@ -1,8 +1,8 @@
 const express = require('express');
 const routes = express.Router();
 const { expressjwt: ejwt } = require("express-jwt");             // Middleware
-const authMiddleware = require('./middlewares/authMiddleware');
-const authmodMiddleware = require('./middlewares/authmodMiddleware');
+const Admincheck = require('./middlewares/Admincheck');
+const Modcheck = require('./middlewares/Modcheck');
 const UserController = require('./controllers/UserController');  // importando controladores
 const ProductController = require('./controllers/ProductController');  
 const PasswordController = require('./controllers/PasswordController'); 
@@ -47,7 +47,7 @@ routes.get('/ordens/:username', OrderController.getOrdersByUserName);
 
 
 // Rotas de administrador
-routes.use('/admin', authMiddleware); // toda rota admin vai chamar o midleware de Autenticação de adm
+routes.use('/admin', Admincheck); // toda rota admin vai chamar o midleware de Autenticação de adm
 routes.put('/admin/users/:id', AdminController.setRoles); // Atualizar um Usuário para adm ou moderador.
 // Rotas de produtos para administrador
 routes.post('/admin/products', ProductController.createProduct);
@@ -69,7 +69,7 @@ routes.delete('/admin/categories/:id', CategoryController.deleteCategory);
 routes.get('/admin/ordens', OrderController.getAllOrders);
 routes.delete('/admin/ordens/:id', OrderController.deleteOrder);
 // Rotas de Moderador
-routes.use('/mod', authmodMiddleware);
+routes.use('/mod', Modcheck);
 routes.post('/mod/products', ProductController.createProduct);
 routes.put('/mod/products/:id', ProductController.updateProductById);
 routes.get('/mod/users', UserController.getAllUsers);

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');    
 
-const authMiddleware = (req, res, next) => {
+const Admincheck = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1]; // Obtém o token de autenticação presente no header key = Authorization ,  do cabeçalho da requisição. O token deve ser enviado no formato "Bearer ". método split(' ') separa o cabeçalho em duas partes, e a segunda parte contém o token.
 
     try {
@@ -18,4 +18,4 @@ const authMiddleware = (req, res, next) => {
     }
 };
 
-module.exports = authMiddleware;
+module.exports = Admincheck;
