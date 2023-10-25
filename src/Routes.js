@@ -2,6 +2,7 @@ const express = require('express');
 const routes = express.Router();
 const { expressjwt: ejwt } = require("express-jwt");             // Middleware
 const authMiddleware = require('./middlewares/authMiddleware');
+const authmodMiddleware = require('./middlewares/authmodMiddleware');
 const UserController = require('./controllers/UserController');  // importando controladores
 const ProductController = require('./controllers/ProductController');  
 const PasswordController = require('./controllers/PasswordController'); 
@@ -18,7 +19,6 @@ routes.use(
         path: ['/users/login', '/users/signup']
     })
 );
-
 
 //define as rotas de usuários.
 routes.post('/users/signup', UserController.createUser);
@@ -45,10 +45,10 @@ routes.put('/carts/:id', CartController.updateCartItem);
 routes.post('/ordens', OrderController.createOrder);
 routes.get('/ordens/:username', OrderController.getOrdersByUserName);
 
+
 // Rotas de administrador
 routes.use('/admin', authMiddleware); // toda rota admin vai chamar o midleware de Autenticação de adm
-routes.post('/admin/roles', AdminController.createRoles);
-routes.post('/admin/roles', AdminController.setUserRoles);
+routes.put('/admin/users/:id', AdminController.setRoles); // Atualizar um Usuário para adm ou moderador.
 // Rotas de produtos para administrador
 routes.post('/admin/products', ProductController.createProduct);
 routes.put('/admin/products/:id', ProductController.updateProductById);
@@ -59,6 +59,7 @@ routes.get('/admin/users/:id', UserController.getUserByID);
 routes.delete('/admin/users/:id', UserController.deleteUser);
 // Rotas de Perfil para administrador
 routes.get('/admin/profiles', ProfileController.getAllProfiles);
+routes.get('/admin/profiles/:username', ProfileController.getProfileByUsername);
 routes.delete('/admin/profiles/:id', ProfileController.deleteProfileById);
 // Rotas de categorias para administrador
 routes.post('/admin/categories', CategoryController.createCategory);
@@ -67,6 +68,18 @@ routes.delete('/admin/categories/:id', CategoryController.deleteCategory);
 // Rotas de Ordens de compra para administrador
 routes.get('/admin/ordens', OrderController.getAllOrders);
 routes.delete('/admin/ordens/:id', OrderController.deleteOrder);
+// Rotas de Moderador
+routes.use('/mod', authmodMiddleware);
+routes.post('/mod/products', ProductController.createProduct);
+routes.put('/mod/products/:id', ProductController.updateProductById);
+routes.get('/mod/users', UserController.getAllUsers);
+routes.get('/mod/users/:id', UserController.getUserByID);
+routes.get('/mod/profiles', ProfileController.getAllProfiles);
+routes.get('/mod/profiles/:username', ProfileController.getProfileByUsername);
+routes.delete('/mod/profiles/:id', ProfileController.deleteProfileById);
+routes.get('/mod/ordens', OrderController.getAllOrders);
+routes.post('/mod/categories', CategoryController.createCategory);
+routes.put('/mod/categories/:id', CategoryController.updateCategory);
 
 
 

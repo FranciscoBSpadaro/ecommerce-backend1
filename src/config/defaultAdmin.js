@@ -12,7 +12,8 @@ const createDefaultAdmin = async () => {
           username: process.env.ADM_NAME,
           email: process.env.ADM_EMAIL,
           password: hashedPassword ,
-          isAdmin: true
+          isAdmin: true,
+          isMod: false,
         });
         console.log('Admin padrão criado com sucesso!');
       }

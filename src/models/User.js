@@ -35,6 +35,10 @@ const User = db.define('users', {
     type: Sequelize.BOOLEAN,
     defaultValue: false, // valor padrão é false (cliente)
   },
+  isMod: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false, // valor padrão é false (cliente)
+  }
 });
 // Sincroniza o modelo com o banco de dados e cria a tabela de Usuários automaticamente
 db.sync()

@@ -60,7 +60,8 @@ exports.loginUser = async (req, res) => {                                   // a
       console.log(`🔓 Login realizado com sucesso para o usuário ${username} 🔓`);
       const token = jwt.sign({                                              // gerar JWToken ao usuário
         username: user.username,
-        isAdmin: user.isAdmin                                               // adiciona no token o atributo isAdmin do usuario para verificar se é um adm quando as rotas forem executadas                                   
+        isAdmin: user.isAdmin,                                               // adiciona no token o atributo isAdmin do usuario para verificar se é um adm quando as rotas forem executadas                                   
+        isMod: user.isMod                                              
       },
         process.env.JWT_SECRET,                                             // senha do token definida no variável de ambiente
         {
