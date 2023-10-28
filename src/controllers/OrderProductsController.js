@@ -37,14 +37,14 @@ exports.addProductToOrder = async (req, res) => {
 exports.removeProductFromOrder = async (req, res) => {
     try {
         const orderId = req.params.id; 
-        const productId = req.params.id; 
+        const {productId} = req.body; 
 
         const order = await Order.findByPk(orderId, { include: Product });
         if (!order) {
             return res.status(404).json({ message: 'Pedido não encontrado' });
         }
 
-        const product = await Product.findByPk(productId);
+        const product = await Product.findOne({ where: { productId } });
         if (!product) {
             return res.status(404).json({ message: 'Produto não encontrado no pedido' });
         }
