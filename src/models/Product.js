@@ -3,7 +3,7 @@ const db = require('../config/database');
 const Category = require('../models/Category');
 
 const Product = db.define('products', {
-    id: {
+    productId: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         unique: true,
@@ -11,7 +11,7 @@ const Product = db.define('products', {
     },
     productName: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true,
     },
     price: {
@@ -27,6 +27,10 @@ const Product = db.define('products', {
         allowNull: false,
         defaultValue: 0
     },
+    image_url: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
     categoryId: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -35,6 +39,7 @@ const Product = db.define('products', {
             key: 'id'
         }
     }
+
 });
 
 Product.belongsTo(Category, { foreignKey: 'categoryId' });

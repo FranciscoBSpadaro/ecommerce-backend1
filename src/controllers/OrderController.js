@@ -1,134 +1,93 @@
 const Order = require('../models/Order');
-const Product = require('../models/Product');
+const PaymentMethod = require('../models/PaymentMethod');
+const Address = require('../models/Address');
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
+const Product = require('../models/Product');
 
-
-// Função para criar um novo pedido
+// Crie um novo pedido
 exports.createOrder = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
+        // Extrair informações do corpo da solicitação
+        const { status, userId, shipping_address, payment_details, productsId } = req.body;
 
-        const { userId, products } = req.body;
-
-        // Verifica se o usuário existe
-        const user = await User.findByPk(userId);                  // acho melhor colocar essa função no cart.
-        if (!user) {
-            return res.status(404).json({ message: 'Usuário não encontrado' });
+        // Verifica se o pedido já existe
+        const userOrder = await Order.findOne({ where: { userId } });
+        if (userOrder) {
+            return res.status(404).json({ message: 'Já existe um pedido para o usuário' });
         }
 
-        // Verifica se os produtos existem e estão disponíveis em estoque          // acho melhor colocar essa função no cart.
-        const productsIds = products.map(product => product.id);
-        const availableProducts = await Product.findAll({
-            where: { id: productsIds, stock: { $gt: 0 } }
-        });
-
-        // Verifica se todos os produtos foram encontrados
-        if (availableProducts.length !== products.length) {
-            return res.status(400).json({ message: 'Um ou mais produtos não estão disponíveis' });
-        }
-
-        // Verifica se a quantidade de produtos solicitados está disponível em estoque
-        const outOfStockProducts = [];
-        products.forEach(product => {
-            const availableProduct = availableProducts.find(p => p.id === product.id);
-            if (availableProduct.stock < product.quantity) {
-                outOfStockProducts.push({
-                    productId: product.id,
-                    productName: availableProduct.productName,
-                    availableStock: availableProduct.stock
-                });
-            }
-        });
-
-        // Se houver produtos fora de estoque, retorna a mensagem de erro
-        if (outOfStockProducts.length > 0) {
-            return res.status(400).json({ message: 'Quantidade solicitada de produtos indisponível', outOfStockProducts });
-        }
-
-        // Cria o pedido
         const order = await Order.create({
-            id,
-            status: 'pending'
+            status,
+            total_value: 0,
+            userId,
+            shipping_address,
+            payment_details,
         });
-
-        // Cria os itens do pedido
-        const orderItems = products.map(product => ({
-            orderId: order.id,
-            productId: product.id,
-            quantity: product.quantity,
-        }));
-        await OrderItem.bulkCreate(orderItems);
-
-        // Atualiza o estoque dos produtos
-        products.forEach(async product => {
-            const availableProduct = availableProducts.find(p => p.id === product.id);
-            await availableProduct.update({ stock: availableProduct.stock - product.quantity });
-        });
-
-        return res.status(201).json({ message: 'Pedido criado com sucesso', orderId: order.id });
+        return res.status(201).json({ message: 'Pedido criado com sucesso', order });
     } catch (error) {
-        console.log(error);
-        return res.status(400).json({ message: error.message });
-    }
-};
-exports.getAllOrders = async (req, res) => {                                                              
-    try {
-        const orders = await Order.findAll();                                                  
-        res.status(200).json(orders);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(400).json({ message: 'Ocorreu um erro ao listar os ordens de compras.' });
-    }
-},
-
-// Função para obter os pedidos de um usuário
-exports.getOrdersByUserName = async (req, res) => {
-    try {
-        const username = req.params.username;
-        const user = await User.findByPk(username);         // Verifica se o usuário existe        
-        if (!user) {                  
-            return res.status(404).json({ message: 'Usuário não encontrado' });
-        }
-        else {
-            const orders = await Order.findOne();                                                  
-            res.status(200).json(orders);
-        }
-    } catch (error) {
-        console.log(error);
-        return res.status(400).json({ message: message.error });
+        console.error('Erro ao criar um pedido:', error);
+        return res.status(500).json({ message: 'Ocorreu um erro ao criar um pedido' });
     }
 };
 
+// Obtenha todos os pedidos
+exports.getAllOrders = async (req, res) => {
+    try {
+        const orders = await Order.findAll({
+            include: [PaymentMethod, Address, User, Product] // Inclua informações de método de pagamento e endereço e do Usúario 
+        });
+
+        return res.status(200).json(orders);
+    } catch (error) {
+        console.error('Erro ao listar pedidos:', error);
+        return res.status(500).json({ message: 'Ocorreu um erro ao listar os pedidos' });
+    }
+};
+
+// Obtenha um pedido por ID
+exports.getOrderById = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const order = await Order.findByPk(orderId, {
+            include: [PaymentMethod, Address, User, Product]
+        });
+
+        if (!order) {
+            return res.status(404).json({ message: 'Pedido não encontrado' });
+        }
+
+        return res.status(200).json(order);
+    } catch (error) {
+        console.error('Erro ao obter um pedido por ID:', error);
+        return res.status(500).json({ message: 'Ocorreu um erro ao obter o pedido' });
+    }
+};
+
+// Atualize um pedido por ID
 exports.updateOrder = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { status, quantity } = req.body
+        const orderId = req.params.id;
+        const { status, payment_details, shipping_address } = req.body;
 
-        await Order.update({ status, quantity }, { where: { id } });                    
-        res.status(200).json({ message: 'Ordem de compra atualizada com sucesso' });
-    }
+        const order = await Order.findByPk(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Pedido não encontrado' });
+        }
 
-    catch (error) {
-        console.log(error);
-        return res.status(400).json({ message: message.error });
-    }
-};
+        // Atualização dos dados do pedido
+        await order.update({ status, payment_details, shipping_address });
 
-exports.deleteOrder = async (req, res) => {
-    try {
-        const username = req.params.username;
+        // Recarregar o pedido após a atualização
+        const updatedOrder = await Order.findByPk(orderId);
 
-        await Order.destroy({ where: { username } });
-
-        return res.status(200).json({ message });
-    }
-
-    catch (error) {
-        console.log(error);
-        return res.status(400).json({ message: message.error });
+        return res.status(200).json({ message: 'Pedido atualizado com sucesso', order: updatedOrder });
+    } catch (error) {
+        console.error('Erro ao atualizar um pedido:', error);
+        return res.status(500).json({ message: 'Ocorreu um erro ao atualizar o pedido' });
     }
 };

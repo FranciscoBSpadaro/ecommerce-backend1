@@ -5,7 +5,8 @@ const { validationResult } = require('express-validator');                // Imp
 
 const handleValidationErrors = (req, res, next) => {                      // Middleware para lidar com erros de validação
   const errors = validationResult(req);                                   // Obtém os erros de validação da requisição
-  if (!errors.isEmpty()) {                                                // se nao estiver vazio e houver erros execute o codigo abaixo com array de erros.
+  if (!errors.isEmpty()) {                                                // true se se nao houver erros, se diferente de true, false retorna erros,com array de erros.
+    console.log(handleValidationErrors)
     return res.status(400).json({ errors: errors.array() });              // Retorna uma resposta com erro 400 se houver erros de validação
   }
   next();
@@ -111,7 +112,7 @@ exports.deleteUser = async (req, res) => {
 
     const deletedRows = await User.destroy({ where: { id } });
     if (deletedRows === 0) {                                           // se retornar indice 0 significa que não excluiu nenhum usuário , esse if é apenas uma camada adicional de validação
-      return handle404Error(res, 'Nenhum usuário foi excluido');
+      return handle400Error(res, 'Nenhum usuário foi excluido');
     }
     console.log(`User ID "${id}" excluído.`);                         // confirma exclusão
     res.status(200).json({ message: "👋 Usuário excluído com sucesso. 👋" });

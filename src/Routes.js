@@ -7,10 +7,12 @@ const UserController = require('./controllers/UserController');  // importando c
 const ProductController = require('./controllers/ProductController');  
 const PasswordController = require('./controllers/PasswordController'); 
 const ProfileController = require('./controllers/ProfileController');
+const AddressController = require('./controllers/AdressController');
 const CategoryController = require('./controllers/CategoryController')
-const CartController = require('./controllers/CartController')
+const OrderProductsController = require('./controllers/OrderProductsController');
 const OrderController = require('./controllers/OrderController')
 const AdminController = require('./controllers/AdminController')
+const PaymentController = require('./controllers/PaymentController');
 
 
 // Middleware para autenticar o usuário usando o token gerado pelo jsonwebtoken
@@ -30,20 +32,32 @@ routes.get('/products', ProductController.getAllProducts);
 routes.get('/products/:id', ProductController.getProductById);
 // define a rota de senhas. 
 routes.put('/password/:id', PasswordController.updateUserPassword);
-// define rotas de perfil
-routes.post('/profiles', ProfileController.createProfile);
-routes.get('/profiles/:username', ProfileController.getProfileByUsername);
-routes.put('/profiles/:username', ProfileController.updateProfileByUsername);
+// define rotas de perfil 
+//routes.get('/profiles/:id', ProfileController.getProfilebyId);
+routes.put('/profiles/:id', ProfileController.updateProfilebyId);
+// define rotas de endereço
+routes.post('/address/', AddressController.createAddress);
+routes.get('/address/:id', AddressController.getAddressesByUserId);
+routes.put('/address/:id', AddressController.updateAddress);
+routes.delete('/address/:id', AddressController.deleteAddress);
 //define rotas de categorias
 routes.get('/categories', CategoryController.getAllCategories);
 routes.get('/categories/:id', CategoryController.getCategoryById);
-// rotas de carrinho de compras - work in progress/TODO
-routes.post('/carts', CartController.findOrCreateCart);
-routes.get('/carts', CartController.getCart);
-routes.put('/carts/:id', CartController.updateCartItem);
-// rotas de ordens de compra - work in progress/TODO
+// rotas de formas de pagamentos
+routes.post('/pagamentos', PaymentController.createPaymentMethod);
+routes.get('/pagamentos/:id', PaymentController.getPaymentMethodsByUserId);
+routes.put('/pagamentos/:id', PaymentController.updatePaymentMethod);
+routes.delete('/pagamentos/:id', PaymentController.deletePaymentMethod);
+
+
+// rotas de ordens de compra 
 routes.post('/ordens', OrderController.createOrder);
-routes.get('/ordens/:username', OrderController.getOrdersByUserName);
+routes.get('/ordens/:id', OrderController.getOrderById);
+routes.put('/ordens/:id', OrderController.updateOrder);
+
+// Rotas para adicionar produtos a ordens de compra
+routes.post('/addpedidos/', OrderProductsController.addProductToOrder);
+routes.put('/addpedidos/:id', OrderProductsController.removeProductFromOrder);
 
 
 // Rotas de administrador
@@ -59,7 +73,7 @@ routes.get('/admin/users/:id', UserController.getUserByID);
 routes.delete('/admin/users/:id', UserController.deleteUser);
 // Rotas de Perfil para administrador
 routes.get('/admin/profiles', ProfileController.getAllProfiles);
-routes.get('/admin/profiles/:username', ProfileController.getProfileByUsername);
+routes.get('/admin/profiles/:id', ProfileController.getProfilebyId);
 routes.delete('/admin/profiles/:id', ProfileController.deleteProfileById);
 // Rotas de categorias para administrador
 routes.post('/admin/categories', CategoryController.createCategory);
@@ -67,17 +81,22 @@ routes.put('/admin/categories/:id', CategoryController.updateCategory);
 routes.delete('/admin/categories/:id', CategoryController.deleteCategory);
 // Rotas de Ordens de compra para administrador
 routes.get('/admin/ordens', OrderController.getAllOrders);
-routes.delete('/admin/ordens/:id', OrderController.deleteOrder);
+
+
 // Rotas de Moderador
 routes.use('/mod', Modcheck);
 routes.post('/mod/products', ProductController.createProduct);
 routes.put('/mod/products/:id', ProductController.updateProductById);
+
 routes.get('/mod/users', UserController.getAllUsers);
 routes.get('/mod/users/:id', UserController.getUserByID);
+
 routes.get('/mod/profiles', ProfileController.getAllProfiles);
-routes.get('/mod/profiles/:username', ProfileController.getProfileByUsername);
+routes.get('/mod/profiles/:id', ProfileController.getProfilebyId);
 routes.delete('/mod/profiles/:id', ProfileController.deleteProfileById);
+
 routes.get('/mod/ordens', OrderController.getAllOrders);
+
 routes.post('/mod/categories', CategoryController.createCategory);
 routes.put('/mod/categories/:id', CategoryController.updateCategory);
 
