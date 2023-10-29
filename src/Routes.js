@@ -18,7 +18,7 @@ const PaymentController = require('./controllers/PaymentController');
 // Middleware para autenticar o usuário usando o token gerado pelo jsonwebtoken
 routes.use(
     ejwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }).unless({   // desabilita a autenticaçao para as rotas login e signup pois nessas não é possivel ter o token , o token so é gerado apos o login.
-        path: ['/users/login', '/users/signup']
+        path: ['/users/login', '/users/signup', '/public/products']
     })
 );
 
@@ -30,6 +30,7 @@ routes.put('/users/:id', UserController.updateUserEmail);      //  exemplo sem r
 // Define as rotas relacionadas aos produtos.
 routes.get('/products', ProductController.getAllProducts);
 routes.get('/products/:id', ProductController.getProductById);
+routes.get('/public/products', ProductController.getAllProducts); // rota sem token para o front end
 // define a rota de senhas. 
 routes.put('/password/:id', PasswordController.updateUserPassword);
 // define rotas de perfil 
