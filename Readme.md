@@ -53,7 +53,9 @@ Certifique-se de substituir "[seu_token_jwt_aqui]" pelo seu token JWT válido. C
   -  adicionado admin padrão
 
 
-- Todos os detalhes do desenvolvimento vai ficar no meu blog para evitar ter aqui um readme muito grande.
+- Todos os detalhes do desenvolvimento vai ficar no meu [Blog](https://fbs-blog.netlify.app/projeto-de-ecommerce-backend-com-node-js-banco-de-dados-sql/ "FBS-DEV BLOG") para evitar ter aqui um readme muito grande.
 - Acompanhe o historico de commits para entender a evolução do codigo. 
-- https://fbs-blog.netlify.app/projeto-de-ecommerce-backend-com-node-js-banco-de-dados-sql/
+
+ [Front-end Repo](https://github.com/FranciscoBSpadaro/ecommerce-frontend1 "work in progress")
+
 
