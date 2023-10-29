@@ -69,7 +69,7 @@ exports.loginUser = async (req, res) => {                                   // a
           expiresIn: process.env.JWT_TIME                                   // tempo de expiraçao do token definido na variável de ambiente
         });
       console.log(token);
-      res.status(200).json({ message: `Login realizado com sucesso. 🔑🔓` });
+      res.status(200).json({ message: `Login realizado com sucesso. 🔑🔓`, token  });
     } else {
       handle401Error(res, "⚠ Senha incorreta ⚠");
     }
