@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database');
 const Category = require('../models/Category');
+const Uploads = require('./Uploads');
 
 const Product = db.define('products', {
     productId: {
@@ -27,9 +28,13 @@ const Product = db.define('products', {
         allowNull: false,
         defaultValue: 0
     },
-    image_url: {
-        type: Sequelize.TEXT,
-        allowNull: true
+    imageId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: Uploads,
+          key: 'id', // Chave correta para a imagem
+        },
       },
     categoryId: {
         type: Sequelize.INTEGER,
@@ -43,6 +48,7 @@ const Product = db.define('products', {
 });
 
 Product.belongsTo(Category, { foreignKey: 'categoryId' });
+Product.belongsTo(Uploads, { foreignKey: 'imageId' });
 
 db.sync()
     .then(() => {

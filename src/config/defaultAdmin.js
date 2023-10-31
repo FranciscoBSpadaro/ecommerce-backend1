@@ -14,6 +14,7 @@ const createDefaultAdmin = async () => {
           password: hashedPassword ,
           isAdmin: true,
           isMod: false,
+          isEmailvalidate: true
         });
         console.log('Admin padrão criado com sucesso!');
       }

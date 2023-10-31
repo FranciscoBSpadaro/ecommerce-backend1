@@ -6,6 +6,7 @@ const Modcheck = require('./middlewares/Modcheck');
 const UserController = require('./controllers/UserController');  // importando controladores
 const ProductController = require('./controllers/ProductController');  
 const PasswordController = require('./controllers/PasswordController'); 
+const EmailController = require('./controllers/EmailController'); 
 const ProfileController = require('./controllers/ProfileController');
 const AddressController = require('./controllers/AdressController');
 const CategoryController = require('./controllers/CategoryController')
@@ -13,6 +14,7 @@ const OrderProductsController = require('./controllers/OrderProductsController')
 const OrderController = require('./controllers/OrderController')
 const AdminController = require('./controllers/AdminController')
 const PaymentController = require('./controllers/PaymentController');
+const UploadsController = require('./controllers/UploadsController')
 
 
 // Middleware para autenticar o usuário usando o token gerado pelo jsonwebtoken
@@ -25,14 +27,17 @@ routes.use(
 //define as rotas de usuários.
 routes.post('/users/signup', UserController.createUser);
 routes.post('/users/login', UserController.loginUser);
+routes.get('/public/products', ProductController.getAllProducts); // rota sem token para o front end
 // todas as outras rotas abaxo são monitoradas por expressjwt
-routes.put('/users/:id', UserController.updateUserEmail);      //  exemplo sem routes.use , routes.put('/users/:id', ejwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }), UserController.updateUserEmail);
+routes.post('/email/verifyEmail', EmailController.verifyEmail);
+routes.post('/email/code', EmailController.requestVerification);
+routes.put('/email/update', EmailController.updateUserEmail);
 // Define as rotas relacionadas aos produtos.
 routes.get('/products', ProductController.getAllProducts);
 routes.get('/products/:id', ProductController.getProductById);
-routes.get('/public/products', ProductController.getAllProducts); // rota sem token para o front end
+
 // define a rota de senhas. 
-routes.put('/password/:id', PasswordController.updateUserPassword);
+routes.put('/password', PasswordController.updateUserPassword);
 // define rotas de perfil 
 //routes.get('/profiles/:id', ProfileController.getProfilebyId);
 routes.put('/profiles/:id', ProfileController.updateProfilebyId);
@@ -57,8 +62,16 @@ routes.get('/ordens/:id', OrderController.getOrderById);
 routes.put('/ordens/:id', OrderController.updateOrder);
 
 // Rotas para adicionar produtos a ordens de compra
-routes.post('/addpedidos/', OrderProductsController.addProductToOrder);
+routes.post('/addpedidos', OrderProductsController.addProductToOrder);
 routes.put('/addpedidos/:id', OrderProductsController.removeProductFromOrder);
+
+// Rota de upload de imagens
+const multer = require('multer');
+const multerConfig = require('./config/Multer');
+routes.get('/uploads', UploadsController.fetchImages);
+routes.post('/uploads', multer(multerConfig).single('file'), UploadsController.uploadImage);
+routes.delete('/uploads/:id', UploadsController.deleteImage);
+
 
 
 // Rotas de administrador
@@ -100,7 +113,6 @@ routes.get('/mod/ordens', OrderController.getAllOrders);
 
 routes.post('/mod/categories', CategoryController.createCategory);
 routes.put('/mod/categories/:id', CategoryController.updateCategory);
-
 
 
 module.exports = routes;

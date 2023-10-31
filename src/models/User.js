@@ -39,6 +39,15 @@ const User = db.define('users', {
     type: Sequelize.BOOLEAN,
     defaultValue: false, // valor padrão é false (cliente)
   },
+  isEmailValidated: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false, // valor padrão é false
+  },
+  verificationCode: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
+  
   profileId: {
     type: Sequelize.INTEGER,
     allowNull: false,
