@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database');
+const User = require('./User');
 
 
 const Profile = db.define('profiles', {
@@ -36,9 +37,19 @@ const Profile = db.define('profiles', {
     celular: {
         type: Sequelize.BIGINT,
         allowNull: true
+    },
+    username: {
+        type: Sequelize.STRING(25),
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'username'
+        }
     }
     
 });
+
+Profile.belongsTo(User, { foreignKey: 'username' });
 
 db.sync()
     .then(() => {

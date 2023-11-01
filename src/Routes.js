@@ -20,19 +20,21 @@ const UploadsController = require('./controllers/UploadsController')
 // Middleware para autenticar o usuário usando o token gerado pelo jsonwebtoken
 routes.use(
     ejwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }).unless({   // desabilita a autenticaçao para as rotas login e signup pois nessas não é possivel ter o token , o token so é gerado apos o login.
-        path: ['/users/login', '/users/signup', '/public/products']
+        path: ['/users/login', '/users/signup', '/public/products', '/public/users']
     })
 );
 
 //define as rotas de usuários.
 routes.post('/users/signup', UserController.createUser);
 routes.post('/users/login', UserController.loginUser);
-routes.get('/public/products', ProductController.getAllProducts); // rota sem token para o front end
+routes.post('/public/users', UserController.getUserByEmail); // esqueceu seu nome de usuario ? digite seu email para buscar
+
 // todas as outras rotas abaxo são monitoradas por expressjwt
 routes.post('/email/verifyEmail', EmailController.verifyEmail);
 routes.post('/email/code', EmailController.requestVerification);
 routes.put('/email/update', EmailController.updateUserEmail);
 // Define as rotas relacionadas aos produtos.
+routes.get('/public/products', ProductController.getAllProducts); // rota sem token para o front end
 routes.get('/products', ProductController.getAllProducts);
 routes.get('/products/:id', ProductController.getProductById);
 
@@ -40,7 +42,7 @@ routes.get('/products/:id', ProductController.getProductById);
 routes.put('/password', PasswordController.updateUserPassword);
 // define rotas de perfil 
 //routes.get('/profiles/:id', ProfileController.getProfilebyId);
-routes.put('/profiles/:id', ProfileController.updateProfilebyId);
+routes.post('/profiles', ProfileController.createProfile);
 // define rotas de endereço
 routes.post('/address/', AddressController.createAddress);
 routes.get('/address/:id', AddressController.getAddressesByUserId);
@@ -68,7 +70,7 @@ routes.put('/addpedidos/:id', OrderProductsController.removeProductFromOrder);
 // Rota de upload de imagens
 const multer = require('multer');
 const multerConfig = require('./config/Multer');
-routes.get('/uploads', UploadsController.fetchImages);
+routes.get('/uploads', UploadsController.getImages);
 routes.post('/uploads', multer(multerConfig).single('file'), UploadsController.uploadImage);
 routes.delete('/uploads/:id', UploadsController.deleteImage);
 
@@ -78,7 +80,7 @@ routes.delete('/uploads/:id', UploadsController.deleteImage);
 routes.use('/admin', Admincheck); // toda rota admin vai chamar o midleware de Autenticação de adm
 routes.put('/admin/users/:id', AdminController.setRoles); // Atualizar um Usuário para adm ou moderador.
 // Rotas de produtos para administrador
-routes.post('/admin/products', ProductController.createProduct);
+routes.post('/admin/products',multer(multerConfig).single('image'), ProductController.createProduct);
 routes.put('/admin/products/:id', ProductController.updateProductById);
 routes.delete('/admin/products/:id', ProductController.deleteProductById);
 // Rotas de Usuários para administrador

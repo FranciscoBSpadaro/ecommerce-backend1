@@ -52,6 +52,7 @@ const multerConfig = {
       'image/jpg',
       'image/bmp',
       'image/gif',
+      'image/jfif',
     ];
 
     if (allowedMimes.includes(file.mimetype)) {

@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database');
 const Category = require('../models/Category');
-const Uploads = require('./Uploads');
 
 const Product = db.define('products', {
     productId: {
@@ -28,14 +27,10 @@ const Product = db.define('products', {
         allowNull: false,
         defaultValue: 0
     },
-    imageId: {
-        type: Sequelize.INTEGER,
+    image_key: {
+        type: Sequelize.STRING, // Armazene a chave (key) da imagem
         allowNull: true,
-        references: {
-          model: Uploads,
-          key: 'id', // Chave correta para a imagem
-        },
-      },
+    },
     categoryId: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -44,18 +39,8 @@ const Product = db.define('products', {
             key: 'id'
         }
     }
-
 });
 
 Product.belongsTo(Category, { foreignKey: 'categoryId' });
-Product.belongsTo(Uploads, { foreignKey: 'imageId' });
-
-db.sync()
-    .then(() => {
-        console.log('🤖 Tabela de Produtos Criada com sucesso! ✔');
-    })
-    .catch((error) => {
-        console.error('Erro ao criar tabela de produtos:', error);
-    });
 
 module.exports = Product;

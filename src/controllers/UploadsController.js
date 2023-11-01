@@ -2,7 +2,7 @@ const Uploads = require('../models/Uploads');
 
 
 const UploadsController = {
-  async fetchImages(req, res) {
+  async getImages(req, res) {
     try {
       const posts = await Uploads.findAll();
       return res.json(posts);

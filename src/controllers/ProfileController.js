@@ -1,24 +1,42 @@
 const Profile = require('../models/Profile');
+const jwt = require('jsonwebtoken');
 
 const ProfileController = {
-    updateProfilebyId: async (req, res) => {
-        try {
-            const { id } = req.params;
-            const { nome, nomeMeio, ultimoNome, telefone, celular } = req.body;
-            const updateProfile = await Profile.update(
-                { nome, nomeMeio, ultimoNome, telefone, celular },
-                { where: { id: id } }
-            );
-            if (updateProfile[0] === 0) {
-                return res.status(404).json({ message: 'Perfil não encontrado. 🔍' });
-            }
-            res.status(200).json({ message: '🤖 Perfil Alterado com Sucesso. 🤖' });
+    createProfile: async (req, res) => {
+      try {
+        const authorizationHeader = req.headers.authorization;
+        if (!authorizationHeader) {
+          return res.status(401).json({ message: 'Token de autorização não fornecido.' });
         }
-        catch (error) {
-            console.error(error);
-            res.status(400).json({ message: error.message });
+  
+        const token = authorizationHeader.split(' ')[1];
+        if (!token) {
+          return res.status(401).json({ message: 'Token JWT não encontrado.' });
         }
+  
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decodedToken) {
+          return res.status(401).json({ message: 'Token JWT inválido.' });
+        }
+  
+        const { username } = decodedToken;
+        const { nome, nomeMeio, ultimoNome, telefone, celular } = req.body;
+        const profileAlreadyExists = await Profile.findOne({ where: { username } });
+  
+        if (profileAlreadyExists) {
+          return res.status(400).json({ message: 'Já existe um perfil com esse username' });
+        }
+        
+        const profile = await Profile.create({ username, nome, nomeMeio, ultimoNome, telefone, celular });
+  
+        return res.status(200).json(profile);
+  
+      } catch (error) {
+        console.error(error);
+        return res.status(400).json({ message: error.message });
+      }
     },
+
     getAllProfiles: async (req, res) => { // Somente adm
         try {
             const profiles = await Profile.findAll();

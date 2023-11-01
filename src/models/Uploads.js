@@ -23,9 +23,7 @@ const Uploads = db.define('Uploads', {
     type: Sequelize.STRING
   },
   url: {
-    type: Sequelize.STRING(255),
-    primaryKey: true,
-        unique: true
+    type: Sequelize.STRING(255)
   }
 
 });

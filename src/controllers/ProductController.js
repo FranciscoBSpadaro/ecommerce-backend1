@@ -1,4 +1,6 @@
 const Product = require('../models/Product');
+const Uploads = require('../models/Uploads');
+
 
 const ProductController = {
   // Método para obter todos os produtos
@@ -31,39 +33,45 @@ const ProductController = {
     }
   },
   // ADM Criar Produto
-  createProduct: async (req, res) => { 
+  createProduct: async (req, res) => {
     try {
-      // Extrair dados do corpo da requisição
       const { productName, price, description, categoryId, quantity } = req.body;
 
-      // Verificar se o produto já existe pelo nome
-      let produtoJaExiste = await Product.findOne({ where: { productName } });
+      const productExists = await Product.findOne({ where: { productName } });
 
-      if (!produtoJaExiste) {
-        // Se o produto não existe, criar um novo produto
+      if (!productExists) { // se não houver produto cadastrado com o mesmo nome então execute o codigo abaixo e cadastre.
+        let imageUrl;
+        if (req.file) {
+          // Se um arquivo foi carregado, armazene a chave no produto
+          const { key } = await Uploads.create({
+            name: req.file.originalname,
+            size: req.file.size,
+            key: req.file.key,
+            url: req.file.location,
+          });
+          imageUrl = key;
+        }
+
         const newProduct = new Product({
           productName,
           price,
           description,
           categoryId,
-          quantity: quantity || 1 // Se não for fornecida uma quantidade, cadastrar com quantidade 1
+          quantity: quantity || 1,
+          image_key: imageUrl, // Definir a chave da imagem no produto
         });
 
         const savedProduct = await newProduct.save();
         console.log(savedProduct);
         res.status(201).json(savedProduct);
       } else {
-        // Se o produto já existe, atualizar a quantidade
-        let updatedQuantity = parseInt(quantity, 10) || 1;
-        produtoJaExiste.quantity += updatedQuantity;
-        await produtoJaExiste.save();
-        console.log(produtoJaExiste);
-        return res.status(200).json({ message: `⚠ O Produto ${produtoJaExiste.productName} já está cadastrado. A quantidade de itens foi atualizada para ${produtoJaExiste.quantity}. ⚠` });
+        return res.status(400).json({ message: "Este produto já está cadastrado" });
       }
     } catch (error) {
-      res.status(400).json({ error: "Não Foi Possivel Cadastrar o Produto, Verifique a Categoria" });
+      res.status(400).json({ error: "Não foi possível cadastrar o Produto, verifique a Categoria" });
     }
   },
+
   //ADM atualizar um produto pelo seu ID
   updateProductById: async (req, res) => {
     try {
@@ -76,13 +84,14 @@ const ProductController = {
       }
 
       // Extrair dados do corpo da requisição
-      const { quantity, price, description, categoryId } = req.body;
+      const { quantity, price, description, categoryId, image_key } = req.body;
 
       // Atualizar os dados do produto encontrado com os novos dados fornecidos
       product.quantity = quantity;
       product.price = price;
       product.description = description;
       product.categoryId = categoryId;
+      product.image_key = image_key;
 
       let updatedProduct = await product.save();
       console.log(`Atenção os Dados do Produto ID "${req.params.id}" Foram Atualizados.`);

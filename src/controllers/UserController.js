@@ -146,3 +146,18 @@ exports.getAllUsers = async (req, res) => {
     res.status(401).json({ message: error.message });
   }
 };
+
+exports.getUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.body; // Busca o e-mail no corpo da requisição
+    const user = await User.findOne({ where: { email } }); // Busca o usuário com base no e-mail
+
+    if (!user)
+      return handle404Error(res, 'Usuário não encontrado.');
+
+    return res.json(user.username); // Retorna o nome de usuário encontrado
+  } catch (error) {
+    console.error(error);
+    return res.status(401).json({ message: error.message });
+  }
+};
