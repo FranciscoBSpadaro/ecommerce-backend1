@@ -51,15 +51,6 @@ const User = db.define('users', {
 });
 
 
-
-// Sincroniza o modelo com o banco de dados e cria a tabela de Usuários automaticamente
-db.sync()
-  .then(() => {
-    console.log('🤖 Tabela de Usuários Criada com Sucesso! ✔');
-    // se remover os comentarios abaixo os usuarios do db aparecem no log do terminal.
-    // const users = await User.findAll();
-    //console.log('Users:', users);
-  })
-  .catch((err) => console.log('Erro ao Sincronizar Banco de Dados! 😥:', err));
+// removido funções de db.sync() não é recomendado quando em produção , para isso deve se usar os recursos de migração do sequelize
 
 module.exports = User;

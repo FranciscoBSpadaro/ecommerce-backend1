@@ -20,7 +20,7 @@ const UploadsController = require('./controllers/UploadsController')
 // Middleware para autenticar o usuário usando o token gerado pelo jsonwebtoken
 routes.use(
     ejwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }).unless({   // desabilita a autenticaçao para as rotas login e signup pois nessas não é possivel ter o token , o token so é gerado apos o login.
-        path: ['/users/login', '/users/signup', '/public/products', '/public/users']
+        path: ['/users/login', '/users/signup', '/public/products', '/public/users', '/email/code', '/email/verifyEmail', '/email/requestNewPassword']
     })
 );
 
@@ -29,9 +29,11 @@ routes.post('/users/signup', UserController.createUser);
 routes.post('/users/login', UserController.loginUser);
 routes.post('/public/users', UserController.getUserByEmail); // esqueceu seu nome de usuario ? digite seu email para buscar
 
-// todas as outras rotas abaxo são monitoradas por expressjwt
-routes.post('/email/verifyEmail', EmailController.verifyEmail);
 routes.post('/email/code', EmailController.requestVerification);
+routes.post('/email/verifyEmail', EmailController.verifyEmail);
+routes.post('/email/requestNewPassword', EmailController.requestNewPassword);
+
+// todas as outras rotas abaixo são monitoradas por expressjwt
 routes.put('/email/update', EmailController.updateUserEmail);
 // Define as rotas relacionadas aos produtos.
 routes.get('/public/products', ProductController.getAllProducts); // rota sem token para o front end
@@ -43,6 +45,8 @@ routes.put('/password', PasswordController.updateUserPassword);
 // define rotas de perfil 
 //routes.get('/profiles/:id', ProfileController.getProfilebyId);
 routes.post('/profiles', ProfileController.createProfile);
+routes.get('/profiles', ProfileController.getProfilebyUsername);
+routes.put('/profiles', ProfileController.updateProfilebyUsername);
 // define rotas de endereço
 routes.post('/address/', AddressController.createAddress);
 routes.get('/address/:id', AddressController.getAddressesByUserId);
@@ -89,7 +93,6 @@ routes.get('/admin/users/:id', UserController.getUserByID);
 routes.delete('/admin/users/:id', UserController.deleteUser);
 // Rotas de Perfil para administrador
 routes.get('/admin/profiles', ProfileController.getAllProfiles);
-routes.get('/admin/profiles/:id', ProfileController.getProfilebyId);
 routes.delete('/admin/profiles/:id', ProfileController.deleteProfileById);
 // Rotas de categorias para administrador
 routes.post('/admin/categories', CategoryController.createCategory);
@@ -108,7 +111,6 @@ routes.get('/mod/users', UserController.getAllUsers);
 routes.get('/mod/users/:id', UserController.getUserByID);
 
 routes.get('/mod/profiles', ProfileController.getAllProfiles);
-routes.get('/mod/profiles/:id', ProfileController.getProfilebyId);
 routes.delete('/mod/profiles/:id', ProfileController.deleteProfileById);
 
 routes.get('/mod/ordens', OrderController.getAllOrders);

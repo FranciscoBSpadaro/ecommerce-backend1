@@ -10,24 +10,24 @@ const Profile = db.define('profiles', {
         autoIncrement: true
     },
     nome: {
-        type: Sequelize.STRING(45),
+        type: Sequelize.STRING(30),
         allowNull: true,
         validate: {
-            len: [1, 45]
+            len: [1, 30]
         }
     },
     nomeMeio: {
-        type: Sequelize.STRING(45),
+        type: Sequelize.STRING(30),
         allowNull: true,
         validate: {
-            len: [1, 45]
+            len: [1, 30]
         }
     },
     ultimoNome: {
-        type: Sequelize.STRING(45),
+        type: Sequelize.STRING(30),
         allowNull: true,
         validate: {
-            len: [1, 45]
+            len: [1, 30]
         }
     },
     telefone: {
@@ -51,10 +51,5 @@ const Profile = db.define('profiles', {
 
 Profile.belongsTo(User, { foreignKey: 'username' });
 
-db.sync()
-    .then(() => {
-        console.log('🤖 Tabela de Profiles Criada com Sucesso! ✔');
-    })
-    .catch((err) => console.log('Erro ao Sincronizar Banco de Dados! 😥:', err));
 
 module.exports = Profile;

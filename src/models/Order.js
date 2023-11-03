@@ -70,10 +70,5 @@ Order.addHook('beforeSave', (order, options) => {
     }
 });
 
-db.sync()
-    .then(() => {
-        console.log('🤖 Tabela de Ordens Criada com Sucesso! ✔');
-    })
-    .catch((err) => console.log('Erro ao Sincronizar Banco de Dados! 😥:', err));
 
 module.exports = Order;

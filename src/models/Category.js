@@ -23,12 +23,5 @@ const Category = db.define('Category', {
 
 });
 
-db.sync()
-    .then(() => {
-        console.log('🤖 Tabela de Categorias Criada com sucesso! ✔');
-    })
-    .catch((error) => {
-        console.error('Erro ao criar tabela de Categorias:', error);
-    });
 
 module.exports = Category;
