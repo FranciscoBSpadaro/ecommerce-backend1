@@ -89,8 +89,8 @@ routes.put('/admin/products/:id', ProductController.updateProductById);
 routes.delete('/admin/products/:id', ProductController.deleteProductById);
 // Rotas de Usuários para administrador
 routes.get('/admin/users', UserController.getAllUsers);
-routes.get('/admin/users/:id', UserController.getUserByID);
-routes.delete('/admin/users/:id', UserController.deleteUser);
+routes.get('/admin/users', UserController.getUsername);
+routes.delete('/admin/users/', UserController.deleteUser);
 // Rotas de Perfil para administrador
 routes.get('/admin/profiles', ProfileController.getAllProfiles);
 routes.delete('/admin/profiles/:id', ProfileController.deleteProfileById);
@@ -108,7 +108,7 @@ routes.post('/mod/products', ProductController.createProduct);
 routes.put('/mod/products/:id', ProductController.updateProductById);
 
 routes.get('/mod/users', UserController.getAllUsers);
-routes.get('/mod/users/:id', UserController.getUserByID);
+routes.get('/mod/users/:id', UserController.getUsername);
 
 routes.get('/mod/profiles', ProfileController.getAllProfiles);
 routes.delete('/mod/profiles/:id', ProfileController.deleteProfileById);

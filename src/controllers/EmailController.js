@@ -12,7 +12,7 @@ const ses = new AWS.SES({
 });
 
 // Função para enviar e-mail de verificação
-const sendVerificationEmail = (email, verificationCode) => {
+exports.sendVerificationEmail = (email, verificationCode) => {
     const params = {
         Destination: {
             ToAddresses: [email],
@@ -54,17 +54,32 @@ const sendNewPassword = (email, newpassword) => {
     return ses.sendEmail(params).promise();
 };
 
-//função para gerar um codigo mais complexo
-function generateVerificationCode(length) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let code = '';
-    for (let i = 0; i < length; i++) {
-        code += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return code;
-}
+exports.sendWelcome = (email, verificationCode) => {
+    const link = `${process.env.APP_URL}/profile`; // Defina a variável link conforme necessário
+    const params = {
+      Destination: {
+        ToAddresses: [email],
+      },
+      Message: {
+        Body: {
+          Text: {
+            Data: `Bem vindo ao nosso comércio eletrônico. \n Não esqueça de validar seu e-mail \n Seu código de verificação é: \n ${verificationCode} \n Utilize esse código no Menu de perfil: ${link}`,
+          },
+        },
+        Subject: {
+          Data: 'Cadastro Realizado com Sucesso na Loja Virtual',
+        },
+      },
+      Source: process.env.EMAIL_SENDER,
+    };
+  
+    return ses.sendEmail(params).promise();
+  };
 
+
+//função para gerar um codigo mais complexo
+//import { generateVerificationCode } from '../utils/VerificationCode';
+const generateVerificationCode = require('../utils/VerificationCode');   
 
 exports.requestVerification = async (req, res) => {
     try {
