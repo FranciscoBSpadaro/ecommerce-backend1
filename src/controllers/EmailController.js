@@ -33,7 +33,7 @@ exports.sendVerificationEmail = (email, verificationCode) => {
     return ses.sendEmail(params).promise();
 };
 
-const sendNewPassword = (email, newpassword) => {
+const sendNewPassword = (email, newpassword) => {   // não é exportado para outros controladores
     const params = {
         Destination: {
             ToAddresses: [email],
@@ -105,11 +105,11 @@ exports.requestVerification = async (req, res) => {
 
 exports.requestNewPassword = async (req, res) => {
     try {
-        const { verificationCode, email } = req.body;
-        const user = await User.findOne({ where: { email, verificationCode } });
+        const { verificationCode, email } = req.body;   // corpo da requisição deve ter um verification code
+        const user = await User.findOne({ where: { email, verificationCode } });  // procura no db na tabela User.js o email fornecido e o codigo de verificação
 
         if (!user) {
-            return res.status(404).json({ message: 'Código de verificação inválido.' });
+            return res.status(404).json({ message: 'Código de verificação inválido.' });   // erro 404 caso nao encontrar email ou codigo invalido
         }
 
         const newpassword = generateVerificationCode(16); // Gera um código de 16 caracteres para a nova senha

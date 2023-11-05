@@ -43,8 +43,9 @@ exports.loginUser = async (req, res) => {
       }
     });
 
-    if (!user)
-    res.status(404).json({ message: "Cliente não encontrado."});
+    if (!user) {
+      return res.status(404).json({ message: "Cliente não encontrado." });
+    }
 
     const passwordMatch = await passwordUtils.comparePasswords(password, user.password);
 
@@ -52,6 +53,7 @@ exports.loginUser = async (req, res) => {
       console.log(`🔓 Login realizado com sucesso para o usuário ${username} ${email} 🔓`);
       const token = jwt.sign({                                              // gerar JWToken ao usuário
         username: user.username,
+        isEmailValidated: user.isEmailValidated,                             // verifica se o usuario jav validou o email true or false pra notificar no front end
         isAdmin: user.isAdmin,                                               // adiciona no token o atributo isAdmin do usuario para verificar se é um adm quando as rotas forem executadas                                   
         isMod: user.isMod                                              
       },
@@ -59,7 +61,7 @@ exports.loginUser = async (req, res) => {
         {
           expiresIn: process.env.JWT_TIME                                   // tempo de expiraçao do token definido na variável de ambiente
         });
-      console.log(token);   // remover quando em produção
+
       res.status(200).json({ message: `🔑 Login realizado Aproveite a Loja 🛒`, token  });
       
 

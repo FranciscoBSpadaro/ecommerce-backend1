@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "FBS-DEV",
-  "license": "ISC",
+  "license": "BSD 3-C",
   "dependencies": {
     "aws-sdk": "^2.1483.0",
     "bcrypt": "^5.1.1",
