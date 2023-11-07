@@ -1,6 +1,6 @@
 {
   "name": "ecommerce-backend",
-  "version": "1.5.5",
+  "version": "1.6.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "author": "FBS-DEV",
   "license": "BSD 3-C",
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.441.0",
     "aws-sdk": "^2.1483.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",

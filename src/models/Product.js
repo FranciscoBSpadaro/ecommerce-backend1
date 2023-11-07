@@ -11,7 +11,7 @@ const Product = db.define('products', {
     },
     productName: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
         unique: true,
     },
     price: {

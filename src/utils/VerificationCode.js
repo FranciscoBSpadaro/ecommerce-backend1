@@ -1,4 +1,5 @@
 function generateVerificationCode(length) {
+  // Function to generate a complex verification code
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
   let code = '';

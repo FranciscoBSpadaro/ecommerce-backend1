@@ -8,11 +8,11 @@ const User = db.define('users', {
     autoIncrement: true,
   },
   username: {
-    type: Sequelize.STRING(25), // limite de 25 caracteres
+    type: Sequelize.STRING(20), // limite de 25 caracteres
     allowNull: false,
     unique: true,
     validate: {
-      len: [1, 25] // validar que o campo tem entre 1 e 25 caracteres
+      len: [1, 20] // validar que o campo tem entre 1 e 25 caracteres
     }
   },
   email: {
@@ -50,7 +50,5 @@ const User = db.define('users', {
 
 });
 
-
-// removido funções de db.sync() não é recomendado quando em produção , para isso deve se usar os recursos de migração do sequelize
 
 module.exports = User;

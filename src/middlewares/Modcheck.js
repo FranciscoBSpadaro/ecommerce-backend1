@@ -1,21 +1,36 @@
-const jwt = require('jsonwebtoken');    
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET = "fallback_secret" } = process.env;
 
-const Modcheck = (req, res, next) => {
-    const token = req.headers.authorization.split(' ')[1]; // Obtém o token de autenticação presente no header key = Authorization ,  do cabeçalho da requisição. O token deve ser enviado no formato "Bearer ". método split(' ') separa o cabeçalho em duas partes, e a segunda parte contém o token.
+//Middleware responsável por verificar se o usuário é um moderador.
+const modcheck = (req, res, next) => {
+  try {
+    // The optional chaining operator '?.' is used to avoid errors when the 'authorization' header is undefined.
+    const token = req.headers.authorization?.split(' ')[1];
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // verifica o token do header da requisição e compara se é o mesmo definido na variavel de ambiente
-        req.username = decoded; // instancia a variável decoded que verificou o token
-
-        if (req.username.isMod){  // Verifica se o token possui a  propriedade isMod do usuário definido no UserController loginUser , se isMod = 1 é true
-            next(); // Se o usuário for administrador, passa para o próximo middleware/controlador
-        } else {
-            res.status(401).json({ message: 'Not authorized.' }); // Se o usuário não for administrador, retorna erro de não autorizado
-        }
-        
-    } catch (err) {
-        res.status(401).json({ message: err.message }); // Se o token for inválido, retorna erro de token inválido
+    if (!token) {
+      return res.status(401).json({
+        error: "Access denied. Token not provided.",
+        data: null
+      });
     }
+    // Verifica o token usando o JWT_SECRET para decodificá-lo.
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    if (!decoded.isMod) {
+      return res.status(401).json({
+        error: "Access denied. User not authorized!",
+        data: null
+      });
+    }
+    // Se o usuário é um moderador, o token decodificado é armazenado no objeto request
+    req.decodedToken = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({
+        error: "Invalid token.",
+        data: null
+    });
+  }
 };
 
-module.exports = Modcheck;
+module.exports = modcheck;

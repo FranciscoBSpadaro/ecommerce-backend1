@@ -1,7 +1,7 @@
 const User = require("../models/User");
 
 exports.setRoles = async (req, res) => {
-  try {
+  try { // TOODO trocar esse id para body username
     const id = req.params.id; // obtém o id a ser atualizado usando a desestruturação do objeto req.params
     const { isAdmin, isMod } = req.body; // obtém as informações isAdmin e isMod do body da requisição usando a desestruturação do objeto req.body
     const [updatedRows] = await User.update(

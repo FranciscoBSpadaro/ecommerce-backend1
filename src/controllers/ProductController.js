@@ -68,7 +68,7 @@ const ProductController = {
         return res.status(400).json({ message: "Este produto já está cadastrado" });
       }
     } catch (error) {
-      res.status(400).json({ error: "Não foi possível cadastrar o Produto, verifique a Categoria" });
+      res.status(400).json({ error: error.message });
     }
   },
 
