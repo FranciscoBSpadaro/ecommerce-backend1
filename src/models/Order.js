@@ -70,5 +70,12 @@ Order.addHook('beforeSave', (order, options) => {
     }
 });
 
+db.sync()
+    .then(() => {
+        console.log('🤖 Tabela de Ordens de compras Criada com sucesso! ✔');
+    })
+    .catch((error) => {
+        console.error('Erro ao criar tabela de Ordens de compras:', error);
+    });
 
 module.exports = Order;

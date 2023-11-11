@@ -58,7 +58,7 @@ module.exports = {
       return res.status(200).json(updatedProfile);
     } catch (error) {
       console.error(error);
-      return res.status(400).json({ message: error.message });
+      return res.status(400).json({ message: 'Formato do nome inválido' });
     }
   },
   // Routes below  for (only admins or mods can perform this action)

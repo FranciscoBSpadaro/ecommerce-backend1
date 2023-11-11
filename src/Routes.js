@@ -37,9 +37,6 @@ routes.post('/email/code', checkBearerToken(), EmailController.requestVerificati
 routes.post('/email/verifyEmail', checkBearerToken(), EmailController.verifyEmail);
 routes.put('/email/update', checkBearerToken(), EmailController.updateUserEmail);
 
-routes.get('/products', checkBearerToken(), ProductController.getAllProducts);
-routes.get('/products/:id', checkBearerToken(), ProductController.getProductById);
-
 routes.put('/password', checkBearerToken(), PasswordController.updateUserPassword);
 
 routes.post('/profiles', checkBearerToken(), ProfileController.createProfile);
@@ -73,9 +70,10 @@ routes.put('/orderproducts/:id', checkBearerToken(), OrderProductsController.rem
 const adminRoutes = express.Router();
 adminRoutes.use(adminCheck);
 
-adminRoutes.get('/users', UserController.getAllUsers);
-adminRoutes.put('/users/', AdminController.setRoles);
-adminRoutes.delete('/users', UserController.deleteUser);
+adminRoutes.get('/users/all', UserController.getAllUsers);
+adminRoutes.put('/users/roles', AdminController.setRoles);
+adminRoutes.get('/users/edit', AdminController.getUser);
+adminRoutes.delete('/users/delete', UserController.deleteUser);
 
 adminRoutes.get('/profiles', ProfileController.getAllProfiles);
 adminRoutes.delete('/profiles/:id', ProfileController.deleteProfileByUsername);
@@ -87,11 +85,14 @@ adminRoutes.delete('/categories/:id', CategoryController.deleteCategory);
 const multer = require('multer');
 const multerConfig = require('./config/multer');
 adminRoutes.get('/uploads', UploadsController.getImages);
-//adminRoutes.post('/uploads', multer(multerConfig).single('file'), UploadsController.uploadImage);
+adminRoutes.post('/uploads', multer(multerConfig).single('file'), UploadsController.uploadImage);
 adminRoutes.delete('/uploads/:id', UploadsController.deleteImage);
 
-adminRoutes.post('/products',multer(multerConfig).single('image'), ProductController.createProduct);
+adminRoutes.get('/products/:id', ProductController.getProductById);
+adminRoutes.post('/products', multer(multerConfig).array('image', 5), ProductController.createProduct);
+//adminRoutes.post('/products',multer(multerConfig).single('image'), ProductController.createProduct);
 adminRoutes.put('/products/:id', ProductController.updateProductById);
+adminRoutes.delete('/products/:id', ProductController.deleteProductById);
 
 adminRoutes.get('/orders', OrderController.getAllOrders);
 

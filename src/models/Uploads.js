@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
 const aws = require('aws-sdk');
 const fs = require('fs').promises;
-const path = require('path');
 
 const s3 = new aws.S3();
 
@@ -28,19 +27,9 @@ const Uploads = db.define('Uploads', {
 
 });
 
-Uploads.beforeSave(async (upload) => {
-  if (!upload.url) {
-    try {
-      upload.url = `${process.env.APP_URL}/files/${upload.key}`;
-      await upload.save();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-});
 
 Uploads.beforeDestroy(async (upload) => {
-  if (process.env.STORAGE_TYPE === 's3') {  // se o storage type for s3 vai deletar do bucket s3 , se nao vai remover do storage_type=local
+  if (process.env.STORAGE_TYPE === 's3') {  // se o storage type for s3 vai deletar do bucket s3
     try {
       await s3.deleteObject({
         Bucket: process.env.BUCKET_NAME,
@@ -49,15 +38,16 @@ Uploads.beforeDestroy(async (upload) => {
     } catch (error) {
       console.error(error);
     }
-  } else {
-    try {  // se for desenvolviemento local deleta o arquivo localmente
-      await fs.unlink(
-        path.resolve(__dirname, '..', '..', 'tmp', 'uploads', upload.key)
-      );
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  } 
 });
+
+db.sync()
+    .then(() => {
+        console.log('🤖 Tabela de Uploads Criada com sucesso! ✔');
+    })
+    .catch((error) => {
+        console.error('Erro ao criar tabela de Uploads:', error);
+    });
+
 
 module.exports = Uploads;

@@ -35,39 +35,27 @@ const ProductController = {
   // ADM Criar Produto
   createProduct: async (req, res) => {
     try {
-      const { productName, price, description, categoryId, quantity } = req.body;
+      const { productName, price, description, categoryId, quantity, image_keys } = req.body;
 
       const productExists = await Product.findOne({ where: { productName } });
 
-      if (!productExists) { // se não houver produto cadastrado com o mesmo nome então execute o codigo abaixo e cadastre.
-        let imageUrl;
-        if (req.file) {
-          // Se um arquivo foi carregado, armazene a chave no produto
-          const { key } = await Uploads.create({
-            name: req.file.originalname,
-            size: req.file.size,
-            key: req.file.key,
-            url: req.file.location,
-          });
-          imageUrl = key;
-        }
-
+      if (!productExists) {
         const newProduct = new Product({
           productName,
           price,
           description,
           categoryId,
           quantity: quantity || 1,
-          image_key: imageUrl, // Definir a chave da imagem no produto
+          image_keys: image_keys || [], // Adiciona as chaves das imagens no produto
         });
 
         const savedProduct = await newProduct.save();
-        console.log(savedProduct);
         res.status(201).json(savedProduct);
       } else {
         return res.status(400).json({ message: "Este produto já está cadastrado" });
       }
     } catch (error) {
+      console.log(error);
       res.status(400).json({ error: error.message });
     }
   },
@@ -103,15 +91,15 @@ const ProductController = {
   // ADM  excluir um produto pelo seu ID
   deleteProductById: async (req, res) => {
     try {
-      // Excluir o produto do banco de dados pelo seu ID
-      const deletedProduct = await Product.destroy({ where: { id: req.params.id } });
+      const productId  = req.params.id
+      const deletedProduct = await Product.destroy({ where: { productId } });
 
       if (!deletedProduct) {
         // Se o produto não foi encontrado, retornar uma resposta com status 404
         return res.status(404).json({ error: "Produto não encontrado" });
       }
 
-      console.log(`Atenção o Produto ID "${req.params.id}" Foi Excluido.`);
+      console.log(`Atenção o Produto ID "${productId}" Foi Excluido.`);
       res.status(200).json({ message: "Produto Excluido com Sucesso." });
     } catch (error) {
       res.status(400).json({ error: error.message });

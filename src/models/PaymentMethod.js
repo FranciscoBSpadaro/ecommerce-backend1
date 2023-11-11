@@ -28,4 +28,13 @@ const PaymentMethod = db.define('payment_methods', {
 
 PaymentMethod.belongsTo(User, { foreignKey: 'userId' });
 
+db.sync()
+    .then(() => {
+        console.log('🤖 Tabela de Pagamentos Criada com sucesso! ✔');
+    })
+    .catch((error) => {
+        console.error('Erro ao criar tabela de Pagamentos:', error);
+    });
+ 
+
 module.exports = PaymentMethod;

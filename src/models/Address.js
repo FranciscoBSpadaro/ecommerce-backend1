@@ -36,4 +36,12 @@ const Address = db.define('addresses', {
 
 Address.belongsTo(User, { foreignKey: 'userId' });
 
+db.sync()
+    .then(() => {
+        console.log('🤖 Tabela de Endereços Criada com sucesso! ✔');
+    })
+    .catch((error) => {
+        console.error('Erro ao criar tabela de Endereços:', error);
+    });
+
 module.exports = Address;
