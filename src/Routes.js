@@ -85,12 +85,12 @@ adminRoutes.delete('/categories/:id', CategoryController.deleteCategory);
 const multer = require('multer');
 const multerConfig = require('./config/multer');
 adminRoutes.get('/uploads', UploadsController.getImages);
+adminRoutes.get('/uploads/images', UploadsController.getImagesByName);
 adminRoutes.post('/uploads', multer(multerConfig).single('file'), UploadsController.uploadImage);
 adminRoutes.delete('/uploads/:id', UploadsController.deleteImage);
 
 adminRoutes.get('/products/:id', ProductController.getProductById);
 adminRoutes.post('/products', ProductController.createProduct);
-//adminRoutes.post('/products',multer(multerConfig).single('image'), ProductController.createProduct);
 adminRoutes.put('/products/:id', ProductController.updateProductById);
 adminRoutes.delete('/products/:id', ProductController.deleteProductById);
 

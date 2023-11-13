@@ -34,6 +34,8 @@ const multerConfig = {
       "image/bmp",
       "image/gif",
       "image/jfif",
+      "image/webp",
+      "image/svg+xml",
     ];
 
     if (allowedMimes.includes(file.mimetype)) {
