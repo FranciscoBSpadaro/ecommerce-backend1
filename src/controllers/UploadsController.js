@@ -4,11 +4,11 @@ const { Op } = require('sequelize');
 const UploadsController = {
   async getImages(req, res) {
     try {
-      const page = req.query.page || 1;
-      const limit = req.query.limit || 10;
-      const offset = (page - 1) * limit;
-      const posts = await Uploads.findAll({ limit, offset });
-      return res.json(posts);
+      const limit = Number(req.query.limit);
+      const offset = Number(req.query.offset) || 0;
+      const images = await Uploads.findAll({ limit, offset });
+      const hasMore = await Uploads.count() > offset + limit;
+      return res.json({ images, hasMore });
     } catch (error) {
       return res.status(500).json(error.message);
     }
@@ -17,17 +17,29 @@ const UploadsController = {
   async getImagesByName(req, res) {
     try {
       const { name } = req.query;
+      const limit = Number(req.query.limit);
+      const offset = Number(req.query.offset) || 0;
       const images = await Uploads.findAll({
         where: {
           name: {
-            [Op.like]: `%${name}%`, // Operador de busca sequelize para encontrar imagens por nomes parecidos
+            [Op.like]: `%${name}%`,
           },
         },
+        limit,
+        offset
       });
       if (images.length === 0) {
         return res.status(404).json({ message: 'Imagem nao localizada' });
       }
-      return res.json(images);
+      const totalImages = await Uploads.count({
+        where: {
+          name: {
+            [Op.like]: `%${name}%`,
+          },
+        },
+      });
+      const hasMore = totalImages > offset + limit;
+      return res.json({ images, hasMore });
     } catch (error) {
       console.log(error);
       return res.status(500).json(error.message);
