@@ -1,11 +1,13 @@
 const Uploads = require('../models/Uploads');
 const { Op } = require('sequelize');
 
-
 const UploadsController = {
   async getImages(req, res) {
     try {
-      const posts = await Uploads.findAll();
+      const page = req.query.page || 1;
+      const limit = req.query.limit || 10;
+      const offset = (page - 1) * limit;
+      const posts = await Uploads.findAll({ limit, offset });
       return res.json(posts);
     } catch (error) {
       return res.status(500).json(error.message);
@@ -18,20 +20,19 @@ const UploadsController = {
       const images = await Uploads.findAll({
         where: {
           name: {
-            [Op.like]: `%${name}%`   // Operador de busca sequelize para encontrar imagens por nomes parecidos
-          }
-        }
+            [Op.like]: `%${name}%`, // Operador de busca sequelize para encontrar imagens por nomes parecidos
+          },
+        },
       });
       if (images.length === 0) {
         return res.status(404).json({ message: 'Imagem nao localizada' });
       }
       return res.json(images);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return res.status(500).json(error.message);
     }
   },
-  
 
   async uploadImage(req, res) {
     try {
