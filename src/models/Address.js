@@ -8,12 +8,12 @@ const Address = db.define('addresses', {
     primaryKey: true,
     autoIncrement: true,
   },
-  userId: {
-    type: Sequelize.INTEGER,
+  username: {
+    type: Sequelize.STRING,
     allowNull: false,
     references: {
       model: User,
-      key: 'id'
+      key: 'username'
     }
   },
   street: {
@@ -34,7 +34,7 @@ const Address = db.define('addresses', {
   },
 });
 
-Address.belongsTo(User, { foreignKey: 'userId' });
+Address.belongsTo(User, { foreignKey: 'username' });
 
 db.sync()
     .then(() => {

@@ -7,7 +7,7 @@ const UploadsController = {
       const limit = Number(req.query.limit);
       const offset = Number(req.query.offset) || 0;
       const images = await Uploads.findAll({ limit, offset });
-      const hasMore = await Uploads.count() > offset + limit;
+      const hasMore = (await Uploads.count()) > offset + limit;
       return res.json({ images, hasMore });
     } catch (error) {
       return res.status(500).json(error.message);
@@ -26,7 +26,7 @@ const UploadsController = {
           },
         },
         limit,
-        offset
+        offset,
       });
       if (images.length === 0) {
         return res.status(404).json({ message: 'Imagem nao localizada' });

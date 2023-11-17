@@ -43,8 +43,8 @@ routes.post('/profiles', checkBearerToken(), ProfileController.createProfile);
 routes.get('/profiles', checkBearerToken(), ProfileController.getProfileByUsername);
 routes.put('/profiles', checkBearerToken(), ProfileController.updateProfileByUsername);
 
-routes.post('/address', checkBearerToken(), AddressController.createAddress);
-routes.get('/addresses/:id', checkBearerToken(), AddressController.getAddressesByUserId);
+routes.post('/addresses', checkBearerToken(), AddressController.createAddress);
+routes.get('/addresses', checkBearerToken(), AddressController.getAddressesByUsername);
 routes.put('/addresses/:id', checkBearerToken(), AddressController.updateAddress);
 routes.delete('/addresses/:id', checkBearerToken(), AddressController.deleteAddress);
 

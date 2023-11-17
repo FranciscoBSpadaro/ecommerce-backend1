@@ -1,14 +1,19 @@
 const Product = require('../models/Product');
+const { validationResult } = require('express-validator');
 
 const ProductController = {
   // Método para obter todos os produtos
   getAllProducts: async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     try {
       // Obter todos os produtos do banco de dados
       let products = await Product.findAll();
       res.status(200).json(products);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
   },
   // Método para obter um produto pelo seu ID
@@ -32,6 +37,10 @@ const ProductController = {
   },
   // ADM Criar Produto
   createProduct: async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     try {
       const {
         productName,
@@ -63,12 +72,16 @@ const ProductController = {
       }
     } catch (error) {
       console.log(error);
-      res.status(400).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
   },
 
   //ADM atualizar um produto pelo seu ID
   updateProductById: async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     try {
       const id = req.params.id;
       let product = await Product.findByPk(id);
@@ -94,16 +107,15 @@ const ProductController = {
       );
       res.status(200).json(updatedProduct);
     } catch (error) {
-      res
-        .status(400)
-        .json({
-          message:
-            'Não foi possivel atualizar os dados desse produto, verifique a Categoria.',
-        });
+      res.status(500).json({ error: error.message });
     }
   },
   // ADM  excluir um produto pelo seu ID
   deleteProductById: async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     try {
       const productId = req.params.id;
       const deletedProduct = await Product.destroy({ where: { productId } });
@@ -116,7 +128,7 @@ const ProductController = {
       console.log(`Atenção o Produto ID "${productId}" Foi Excluido.`);
       res.status(200).json({ message: 'Produto Excluido com Sucesso.' });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
   },
 };
