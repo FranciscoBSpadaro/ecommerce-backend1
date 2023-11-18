@@ -6,11 +6,16 @@ const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateVerificationCode = require('../utils/verificationCode');
 const { sendWelcomeEmail } = require('../controllers/EmailController');
 const { Op } = require('sequelize');
+const { validationResult } = require('express-validator');
 
 
 module.exports = {
   createUser: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
       const { username, email, password } = req.body;
       // Check if the user with the given email already exists
       const userAlreadyExists = await User.findOne({ where: { email } });
@@ -25,16 +30,20 @@ module.exports = {
       // Creating user in the database
       const user = await User.create({ username, email, password: hashedPassword, verificationCode });
       console.log(user);
-      res.status(201).json({ message: `🤖 User with username ${username} and email ${email} registered successfully! 🤖` });
+      return res.status(201).json({ message: `🤖 User with username ${username} and email ${email} registered successfully! 🤖` });
     } catch (error) {
       console.error(error);
-      res.status(400).json({ message: "⚠ Invalid or duplicate email ⚠" });
+      return res.status(500).json({ message: error.message });
     }
   },
 
   // Route for user login
   loginUser: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
       const { email, username, password } = req.body;
 
       // Find user by email or username
@@ -67,19 +76,24 @@ module.exports = {
           expiresIn: JWT_TIME
         });
 
-        res.status(200).json({ message: `🔑 Login successful! Happy shopping 🛒`, token });
+        return res.status(200).json({ message: `🔑 Login successful! Happy shopping 🛒`, token });
       } else {
         res.status(400).json({ message: "⚠ Incorrect password ⚠" });
       }
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: error.message });
+      return res.status(500).json({ message: error.message });
     }
   },
 
   // front-end display username
   getUsername: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
       const { username } = req.decodedToken;;
       const user = await User.findOne({ where: { username } });
 
@@ -97,6 +111,10 @@ module.exports = {
   // Route for user updating email
   updateUserEmail: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
 
       const { username } = req.decodedToken;
       const { email } = req.body;
@@ -117,16 +135,20 @@ module.exports = {
       );
 
       console.log(`User ${username} email updated to ${email}. Verification email sent.`);
-      res.status(200).json({ message: '🤖 Email updated successfully. 🤖' });
+      return res.status(200).json({ message: '🤖 Email updated successfully. 🤖' });
     } catch (error) {
       console.error(error);
-      res.status(400).json({ message: '⚠ Invalid or duplicate email ⚠' });
+      return res.status(500).json({ message: error.message });
     }
   },
 
   // Route for deleting user (only admins can perform this action)
   deleteUser: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
 
       const { username } = req.body;
 
@@ -157,17 +179,26 @@ module.exports = {
   // Route for getting all users (only admins can perform this action)
   getAllUsers: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
       const users = await User.findAll();
-      res.status(200).json(users);
+      return res.status(200).json(users);
     } catch (error) {
       console.error(error);
-      res.status(401).json({ message: error.message });
+      return res.status(401).json({ message: error.message });
     }
   },
 
   // Route for getting user by email (only admins can perform this action)
   getUserByEmail: async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
 
       const { email } = req.body;
       const user = await User.findOne({ where: { email } });

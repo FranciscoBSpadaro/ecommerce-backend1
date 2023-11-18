@@ -10,20 +10,20 @@ const Product = db.define('products', {
         autoIncrement: true
     },
     productName: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(50),
         allowNull: false,
         unique: true,
     },
     price: {
-        type: Sequelize.FLOAT,
+        type: Sequelize.FLOAT(15),
         allowNull: false
     },
     description: {
-        type: Sequelize.TEXT,
+        type: Sequelize.TEXT(100),
         allowNull: true
     },
     quantity: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER(9),
         allowNull: false,
         defaultValue: 0
     },
