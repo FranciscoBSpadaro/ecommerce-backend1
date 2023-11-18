@@ -1,12 +1,17 @@
-if (process.env.NODE_ENV !== 'production') { // se ambiente for difente de produção então use o dotenv , no caso de ambiente development
-  require('dotenv').config()
-}
-
 const express = require('express');
 const app = express();
 const morgan = require('morgan')
 const cors = require('cors')
+const helmet = require('helmet');
 const adm = require('../src/config/defaultAdmin')
+
+if (process.env.NODE_ENV !== 'production') { // se ambiente for difente de produção então use o dotenv , no caso de ambiente development
+  require('dotenv').config()
+}
+
+// Configuração do middleware e do body parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // Configuração do CORS
 app.use(cors({
@@ -19,6 +24,9 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", 'GET,PUT,POST,DELETE,OPTIONS');
   next();
 });
+
+// Usando o middleware Helmet
+app.use(helmet());
 
 // Configuração do middleware e do body parser
 app.use(express.json());
@@ -33,7 +41,6 @@ app.use(routes);
 
 // cria adm padrão
 app.use(adm);
-
 
 // Configuração da porta do servidor
 const PORT = process.env.PORT || 3000;
