@@ -19,7 +19,7 @@ const Product = db.define('products', {
         allowNull: false
     },
     description: {
-        type: Sequelize.TEXT,
+        type: Sequelize.STRING(55),
         allowNull: true
     },
     quantity: {
