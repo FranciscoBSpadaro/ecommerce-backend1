@@ -3,7 +3,6 @@ const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
-const adm = require('../src/config/defaultAdmin');
 
 if (process.env.NODE_ENV !== 'production') {
   // se ambiente for difente de produção então use o dotenv , no caso de ambiente development
@@ -41,9 +40,6 @@ const routes = require('./Routes');
 
 // Rotas
 app.use(routes);
-
-// cria adm padrão
-app.use(adm);
 
 // Configuração da porta do servidor
 const PORT = process.env.PORT || 3000;

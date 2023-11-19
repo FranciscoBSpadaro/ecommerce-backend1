@@ -15,11 +15,11 @@ const Product = db.define('products', {
         unique: true,
     },
     price: {
-        type: Sequelize.FLOAT(15),
+        type: Sequelize.DECIMAL(10, 2), // 10 dígitos no total, 2 depois da vírgula
         allowNull: false
     },
     description: {
-        type: Sequelize.TEXT(100),
+        type: Sequelize.TEXT,
         allowNull: true
     },
     quantity: {

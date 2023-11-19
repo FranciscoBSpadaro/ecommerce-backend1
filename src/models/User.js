@@ -53,8 +53,11 @@ const User = db.define('users', {
 db.sync()
     .then(() => {
         console.log('🤖 Tabela de Usuários Criada com sucesso! ✔');
+        const createDefaultAdmin = require('../config/defaultAdmin')
+        createDefaultAdmin();
     })
     .catch((error) => {
         console.error('Erro ao criar tabela de Usuários:', error);
     });
+
 module.exports = User;
