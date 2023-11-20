@@ -6,6 +6,7 @@ const modCheck  = require('./middlewares/modCheck');
 const checkBearerToken = require('./middlewares/jwtMiddleware')
 const UserController = require('./controllers/UserController');
 const ProductController = require('./controllers/ProductController');
+const ProductDetailsController = require('./controllers/ProductDetailsController');
 const PasswordController = require('./controllers/PasswordController');
 const EmailController = require('./controllers/EmailController');
 const ProfileController = require('./controllers/ProfileController');
@@ -94,6 +95,11 @@ adminRoutes.post('/products', ProductController.createProduct);
 adminRoutes.put('/products/:id', ProductController.updateProductById);
 adminRoutes.delete('/products/:id', ProductController.deleteProductById);
 
+adminRoutes.get('/productdetails/:productId', ProductDetailsController.getProductDetailsByProductId);
+adminRoutes.post('/productdetails', ProductDetailsController.createProductDetails);
+adminRoutes.put('/productdetails/:productId', ProductDetailsController.updateProductDetailsByProductId);
+adminRoutes.delete('/productdetails/:productId', ProductDetailsController.deleteProductDetailsByProductId);
+
 adminRoutes.get('/orders', OrderController.getAllOrders);
 
 
@@ -116,6 +122,12 @@ modRoutes.put('/categories/:id', CategoryController.updateCategory);
 
 
 modRoutes.put('/products/:id', ProductController.updateProductById);
+
+// Rotas para ProductDetails em modRoutes
+modRoutes.get('/productdetails/:productId', ProductDetailsController.getProductDetailsByProductId);
+modRoutes.post('/productdetails', ProductDetailsController.createProductDetails);
+modRoutes.put('/productdetails/:productId', ProductDetailsController.updateProductDetailsByProductId);
+modRoutes.delete('/productdetails/:productId', ProductDetailsController.deleteProductDetailsByProductId);
 
 routes.use('/mod', modRoutes);
 

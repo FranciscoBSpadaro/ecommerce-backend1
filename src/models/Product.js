@@ -19,9 +19,13 @@ const Product = db.define('products', {
         allowNull: false
     },
     description: {
-        type: Sequelize.STRING(55),
+        type: Sequelize.STRING(55), 
         allowNull: true
     },
+    isOferta: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false, // produdos que irão aparecer na página inicial no primeiro carrossel
+      },
     quantity: {
         type: Sequelize.INTEGER(9),
         allowNull: false,

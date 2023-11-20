@@ -23,7 +23,7 @@ const ProductController = {
       const id = req.params;
 
       // Buscar o produto no banco de dados pelo seu ID
-      let product = await Product.findByPk(id);
+      let product = await Product.findOne(id);
 
       if (!product) {
         // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
