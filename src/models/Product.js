@@ -18,11 +18,15 @@ const Product = db.define('products', {
         type: Sequelize.DECIMAL(10, 2), // 10 dígitos no total, 2 depois da vírgula
         allowNull: false
     },
+    discountPrice: {
+        type: Sequelize.DECIMAL(10, 2), // preço de oferta
+        allowNull: true
+    },
     description: {
         type: Sequelize.STRING(55), 
         allowNull: true
     },
-    isOferta: {
+    isOffer: {
         type: Sequelize.BOOLEAN,
         defaultValue: false, // produdos que irão aparecer na página inicial no primeiro carrossel
       },

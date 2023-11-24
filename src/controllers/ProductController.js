@@ -80,36 +80,31 @@ const ProductController = {
   updateProductById: async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ errors: errors.array() });
     }
     try {
-      const id = req.params.id;
-      let product = await Product.findByPk(id);
+        const { productId, productName, price, discountPrice, isOffer, description, quantity, image_keys } = req.body;
 
-      if (!product) {
-        // Se o produto não existe, retornar uma resposta com status 404 e uma mensagem de erro
-        return res.status(404).json({ error: 'Produto não encontrado' });
-      }
+        const product = await Product.findOne({ where: { productId } });
+        if (!product) {
+            return res.status(404).json({ message: 'Produto não encontrado' });
+        }
 
-      // Extrair dados do corpo da requisição
-      const { quantity, price, description, categoryId, image_key } = req.body;
+        const updatedProduct = await product.update({
+            productName,
+            price,
+            discountPrice, // preço de oferta
+            isOffer, // se o produto é uma oferta
+            description,
+            quantity,
+            image_keys
+        });
 
-      // Atualizar os dados do produto encontrado com os novos dados fornecidos
-      product.quantity = quantity;
-      product.price = price;
-      product.description = description;
-      product.categoryId = categoryId;
-      product.image_key = image_key;
-
-      let updatedProduct = await product.save();
-      console.log(
-        `Atenção os Dados do Produto ID "${req.params.id}" Foram Atualizados.`,
-      );
-      res.status(200).json(updatedProduct);
+        res.status(200).json(updatedProduct);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
-  },
+},
   // ADM  excluir um produto pelo seu ID
   deleteProductById: async (req, res) => {
     const errors = validationResult(req);
