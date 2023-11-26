@@ -16,6 +16,92 @@ const ProductController = {
       res.status(500).json({ error: error.message });
     }
   },
+  // Método para obter um produto pelo seu nome marca ou modelo
+  getProductsByQuery: async (req, res) => {
+    try {
+      const { query } = req.query;
+      const limit = Number(req.query.limit);
+      const offset = Number(req.query.offset) || 0;
+
+      const products = await Product.findAll({
+        where: {
+          [Op.or]: [
+            { productName: { [Op.like]: `%${query}%` } },
+            { brand: { [Op.like]: `%${query}%` } },
+            { model: { [Op.like]: `%${query}%` } },
+          ],
+        },
+        limit,
+        offset,
+      });
+
+      if (products.length === 0) {
+        return res.status(404).json({ message: 'Produto não encontrado' });
+      }
+
+      const totalProducts = await Product.count({
+        where: {
+          [Op.or]: [
+            { productName: { [Op.like]: `%${query}%` } },
+            { brand: { [Op.like]: `%${query}%` } },
+            { model: { [Op.like]: `%${query}%` } },
+          ],
+        },
+      });
+
+      const hasMore = totalProducts > offset + limit;
+      return res.json({ products, hasMore });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json(error.message);
+    }
+  },
+  // ADM Criar Produto
+  createProduct: async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+      const {
+        productName,
+        price,
+        brand,
+        model,
+        description,
+        categoryId,
+        quantity,
+        image_keys,
+      } = req.body;
+
+      // Verificar se já existe um produto com a mesma marca e modelo
+      const existingProduct = await Product.findOne({
+        where: { brand, model },
+      });
+      if (existingProduct) {
+        return res
+          .status(400)
+          .json({ message: 'Já existe um produto com a mesma marca e modelo' });
+      }
+
+      const newProduct = new Product({
+        productName,
+        price,
+        brand, // marca do produto
+        model, // modelo do produto
+        description,
+        categoryId,
+        quantity,
+        image_keys,
+      });
+
+      const savedProduct = await newProduct.save();
+      res.status(201).json(savedProduct);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
   // Método para obter um produto pelo seu ID
   getProductById: async (req, res) => {
     try {
@@ -35,76 +121,49 @@ const ProductController = {
       res.status(400).json({ error: error.message });
     }
   },
-  // ADM Criar Produto
-  createProduct: async (req, res) => {
+
+  //ADM atualizar um produto pelo seu ID
+  updateProductById: async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
     try {
       const {
+        productId,
         productName,
         price,
+        brand,
+        model,
+        discountPrice, // preço de oferta
+        isOffer, // se o produto é uma oferta
         description,
-        categoryId,
         quantity,
         image_keys,
       } = req.body;
 
-      const productExists = await Product.findOne({ where: { productName } });
-
-      if (!productExists) {
-        const newProduct = new Product({
-          productName,
-          price,
-          description,
-          categoryId,
-          quantity: quantity || 1,
-          image_keys: image_keys || [], // Adiciona as chaves das imagens no produto
-        });
-
-        const savedProduct = await newProduct.save();
-        res.status(201).json(savedProduct);
-      } else {
-        return res
-          .status(400)
-          .json({ message: 'Este produto já está cadastrado' });
+      const product = await Product.findOne({ where: { productId } });
+      if (!product) {
+        return res.status(404).json({ message: 'Produto não encontrado' });
       }
+
+      const updatedProduct = await product.update({
+        productName,
+        price,
+        brand,
+        model,
+        discountPrice, // preço de oferta
+        isOffer, // se o produto é uma oferta
+        description,
+        quantity,
+        image_keys,
+      });
+
+      res.status(200).json(updatedProduct);
     } catch (error) {
-      console.log(error);
       res.status(500).json({ error: error.message });
     }
   },
-
-  //ADM atualizar um produto pelo seu ID
-  updateProductById: async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    try {
-        const { productId, productName, price, discountPrice, isOffer, description, quantity, image_keys } = req.body;
-
-        const product = await Product.findOne({ where: { productId } });
-        if (!product) {
-            return res.status(404).json({ message: 'Produto não encontrado' });
-        }
-
-        const updatedProduct = await product.update({
-            productName,
-            price,
-            discountPrice, // preço de oferta
-            isOffer, // se o produto é uma oferta
-            description,
-            quantity,
-            image_keys
-        });
-
-        res.status(200).json(updatedProduct);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-},
   // ADM  excluir um produto pelo seu ID
   deleteProductById: async (req, res) => {
     const errors = validationResult(req);

@@ -90,6 +90,7 @@ adminRoutes.get('/uploads/images', UploadsController.getImagesByName);
 adminRoutes.post('/uploads', multer(multerConfig).single('file'), UploadsController.uploadImage);
 adminRoutes.delete('/uploads/:id', UploadsController.deleteImage);
 
+adminRoutes.get('/products/:id', ProductController.getProductsByQuery);
 adminRoutes.get('/products/:id', ProductController.getProductById);
 adminRoutes.post('/products', ProductController.createProduct);
 adminRoutes.put('/products/:id', ProductController.updateProductById);

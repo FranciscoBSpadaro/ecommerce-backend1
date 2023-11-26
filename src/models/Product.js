@@ -10,9 +10,17 @@ const Product = db.define('products', {
         autoIncrement: true
     },
     productName: {
-        type: Sequelize.STRING(50),
+        type: Sequelize.STRING(45),
         allowNull: false,
         unique: true,
+    },
+    brand: {
+        type: Sequelize.STRING(25),
+        allowNull: false,
+    },
+    model: {
+        type: Sequelize.STRING(25),
+        allowNull: false,
     },
     price: {
         type: Sequelize.DECIMAL(10, 2), // 10 dígitos no total, 2 depois da vírgula

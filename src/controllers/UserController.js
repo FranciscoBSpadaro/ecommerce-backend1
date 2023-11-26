@@ -1,13 +1,12 @@
 // Importing required modules
-const User = require("../models/User");
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET , JWT_TIME } = process.env;
+const { JWT_SECRET, JWT_TIME } = process.env;
 const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateVerificationCode = require('../utils/verificationCode');
 const { sendWelcomeEmail } = require('../controllers/EmailController');
 const { Op } = require('sequelize');
 const { validationResult } = require('express-validator');
-
 
 module.exports = {
   createUser: async (req, res) => {
@@ -17,20 +16,45 @@ module.exports = {
         return res.status(400).json({ errors: errors.array() });
       }
       const { username, email, password } = req.body;
-      // Check if the user with the given email already exists
+
+      // Verificar se já existe um usuário com o mesmo nome de usuário
+      const usernameAlreadyExists = await User.findOne({ where: { username } });
+      if (usernameAlreadyExists) {
+        return res
+          .status(400)
+          .json({
+            message: `Já existe um cadastro com ${username}. Por favor, escolha outro nome de usuário.`,
+          });
+      }
+
+      // Verificar se o usuário com o email fornecido já existe
       const userAlreadyExists = await User.findOne({ where: { email } });
       if (userAlreadyExists) {
-        return res.status(400).json({ message: `⚠ The user with email ${email} is already registered ⚠` });
+        return res
+          .status(400)
+          .json({
+            message: `Já existe um cadastro com ${email} Por favor, escolha outro e-mail.`,
+          });
       }
+
       // Hashing password for security
       const hashedPassword = await hashPassword(password);
       // Generating verification code and sending a verification email
       const verificationCode = generateVerificationCode(8);
       await sendWelcomeEmail(email, verificationCode);
       // Creating user in the database
-      const user = await User.create({ username, email, password: hashedPassword, verificationCode });
-      console.log(user);
-      return res.status(201).json({ message: `🤖 User with username ${username} and email ${email} registered successfully! 🤖` });
+      const user = await User.create({
+        username,
+        email,
+        password: hashedPassword,
+        verificationCode,
+      });
+      console.log(user); // remover quando em produçao
+      return res
+        .status(201)
+        .json({
+          message: `🤖 Cadastro Realizado com Sucesso! Verifique seu e-mail 🤖`,
+        });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: error.message });
@@ -49,15 +73,12 @@ module.exports = {
       // Find user by email or username
       const user = await User.findOne({
         where: {
-          [Op.or]: [
-            { email },
-            { username }
-          ]
-        }
+          [Op.or]: [{ email }, { username }],
+        },
       });
 
       if (!user) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: 'User not found.' });
       }
 
       // Compare password with hashed password stored in the database
@@ -67,18 +88,24 @@ module.exports = {
         console.log(`🔓 User ${username} ${email} logged in successfully 🔓`);
 
         // Generate JWT token
-        const token = jwt.sign({
-          username: user.username,
-          isEmailValidated: user.isEmailValidated,
-          isAdmin: user.isAdmin,
-          isMod: user.isMod
-        }, JWT_SECRET, {
-          expiresIn: JWT_TIME
-        });
+        const token = jwt.sign(
+          {
+            username: user.username,
+            isEmailValidated: user.isEmailValidated,
+            isAdmin: user.isAdmin,
+            isMod: user.isMod,
+          },
+          JWT_SECRET,
+          {
+            expiresIn: JWT_TIME,
+          },
+        );
 
-        return res.status(200).json({ message: `🔑 Login successful! Happy shopping 🛒`, token });
+        return res
+          .status(200)
+          .json({ message: `🔑 Login successful! Happy shopping 🛒`, token });
       } else {
-        res.status(400).json({ message: "⚠ Incorrect password ⚠" });
+        res.status(400).json({ message: '⚠ Incorrect password ⚠' });
       }
     } catch (error) {
       console.error(error);
@@ -94,7 +121,7 @@ module.exports = {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { username } = req.decodedToken;;
+      const { username } = req.decodedToken;
       const user = await User.findOne({ where: { username } });
 
       if (!user) {
@@ -120,7 +147,8 @@ module.exports = {
       const { email } = req.body;
 
       const [updatedRows] = await User.update(
-        { email }, { where: { username } }
+        { email },
+        { where: { username } },
       );
 
       if (updatedRows === 0) {
@@ -130,12 +158,14 @@ module.exports = {
       const verificationCode = generateVerificationCode(8);
       await sendVerificationEmail(email, verificationCode);
 
-      await User.update(
-        { isEmailValidated: false }, { where: { email } }
-      );
+      await User.update({ isEmailValidated: false }, { where: { email } });
 
-      console.log(`User ${username} email updated to ${email}. Verification email sent.`);
-      return res.status(200).json({ message: '🤖 Email updated successfully. 🤖' });
+      console.log(
+        `User ${username} email updated to ${email}. Verification email sent.`,
+      );
+      return res
+        .status(200)
+        .json({ message: '🤖 Email updated successfully. 🤖' });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: error.message });
@@ -159,7 +189,9 @@ module.exports = {
       }
 
       if (userToDelete.isAdmin === true) {
-        return res.status(403).json({ message: 'You cannot delete an admin user.' });
+        return res
+          .status(403)
+          .json({ message: 'You cannot delete an admin user.' });
       }
 
       const deletedRows = await User.destroy({ where: { username } });
@@ -169,7 +201,9 @@ module.exports = {
       }
 
       console.log(`User "${username}" deleted.`);
-      return res.status(200).json({ message: '👋 User deleted successfully. 👋' });
+      return res
+        .status(200)
+        .json({ message: '👋 User deleted successfully. 👋' });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: error.message });
@@ -212,5 +246,5 @@ module.exports = {
       console.error(error);
       return res.status(401).json({ message: error.message });
     }
-  }
+  },
 };

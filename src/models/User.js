@@ -12,7 +12,7 @@ const User = db.define('users', {
     allowNull: false,
     unique: true,
     validate: {
-      len: [1, 20] // validar que o campo tem entre 1 e 25 caracteres
+      len: [5, 20] // validar que o campo tem entre 1 e 25 caracteres
     }
   },
   email: {
@@ -20,14 +20,14 @@ const User = db.define('users', {
     allowNull: false,
     unique: true,
     validate: {
-      len: [1, 50]
+      len: [5, 50]
     }
   },
   password: {
     type: Sequelize.STRING(60),
     allowNull: false,
     validate: {
-      len: [1, 60] // hashedpassword usa 60 caracteres
+      len: [8, 60] // hashedpassword usa 60 caracteres
     }
   },
   isAdmin: {
