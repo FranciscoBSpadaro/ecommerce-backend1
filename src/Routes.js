@@ -21,7 +21,7 @@ const UploadsController = require('./controllers/UploadsController');
 // Middleware to authenticate tokens
 routes.use(
     ejwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }).unless({
-        path: ['/users/login', '/users/signup', '/public/products', '/public/users', '/email/code', '/email/verifyEmail', '/email/requestNewPassword']
+        path: ['/users/signup', '/users/login', '/public/users', '/public/products', '/forgotpassword', '/checkcode', '/email/code']
     })
 );
 
@@ -30,15 +30,17 @@ routes.post('/users/signup', UserController.createUser);
 routes.post('/users/login', UserController.loginUser);
 routes.post('/public/users', UserController.getUserByEmail);
 routes.get('/public/products', ProductController.getAllProducts);
-routes.post('/email/requestNewPassword', EmailController.requestNewPassword);
+routes.put('/forgotpassword', PasswordController.changeUserPassword);
+routes.post('/checkcode', PasswordController.checkCode);
+routes.post('/email/code', EmailController.requestVerification);
 
 
 // All routes below require token authentication.
-routes.post('/email/code', checkBearerToken(), EmailController.requestVerification);
 routes.post('/email/verifyEmail', checkBearerToken(), EmailController.verifyEmail);
 routes.put('/email/update', checkBearerToken(), EmailController.updateUserEmail);
 
 routes.put('/password', checkBearerToken(), PasswordController.updateUserPassword);
+routes.post('/password/verify', checkBearerToken(), PasswordController.verifyCurrentPassword);
 
 routes.post('/profiles', checkBearerToken(), ProfileController.createProfile);
 routes.get('/profiles', checkBearerToken(), ProfileController.getProfileByUsername);
@@ -75,6 +77,7 @@ adminRoutes.get('/users/all', UserController.getAllUsers);
 adminRoutes.put('/users/roles', AdminController.setRoles);
 adminRoutes.get('/users/edit', AdminController.getUser);
 adminRoutes.delete('/users/delete', UserController.deleteUser);
+adminRoutes.post('/email/requestNewPassword', EmailController.requestNewPassword);
 
 adminRoutes.get('/profiles', ProfileController.getAllProfiles);
 adminRoutes.delete('/profiles/:id', ProfileController.deleteProfileByUsername);
@@ -112,6 +115,7 @@ modRoutes.use(modCheck);
 
 modRoutes.get('/users', UserController.getAllUsers);
 modRoutes.get('/users', UserController.getUsername);
+modRoutes.post('/email/requestNewPassword', EmailController.requestNewPassword);
 
 modRoutes.get('/profiles', ProfileController.getAllProfiles);
 modRoutes.delete('/profiles/:id', ProfileController.deleteProfileByUsername);
