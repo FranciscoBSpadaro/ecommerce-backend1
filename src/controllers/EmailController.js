@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const UserDetails = require('../models/UserDetails');
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses'); // v3 aws-sdk version
 const { hashPassword } = require('../utils/passwordUtils');
 const generateVerificationCode = require('../utils/verificationCode');
@@ -88,9 +89,9 @@ module.exports = {
   requestVerification: async (req, res) => {
     try {
       const { email } = req.body;
-      const emailExists = await User.findOne({ where: { email } });
+      const user = await User.findOne({ where: { email } });
 
-      if (!emailExists) {
+      if (!user) {
         return res
           .status(404)
           .json({ message: 'Email not found. Invalid Email' });
@@ -98,7 +99,10 @@ module.exports = {
       // verification Code Length 10
       const verificationCode = generateVerificationCode(10);
       await sendVerificationEmail(email, verificationCode);
-      await User.update({ verificationCode }, { where: { email } });
+      await UserDetails.update(
+        { verificationCode, isCodeValid: true }, // set isCodeValid to true
+        { where: { userId: user.id } }, // update UserDetails where userId matches
+      );
 
       return res
         .status(200)

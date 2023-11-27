@@ -43,11 +43,11 @@ routes.put('/password', checkBearerToken(), PasswordController.updateUserPasswor
 routes.post('/password/verify', checkBearerToken(), PasswordController.verifyCurrentPassword);
 
 routes.post('/profiles', checkBearerToken(), ProfileController.createProfile);
-routes.get('/profiles', checkBearerToken(), ProfileController.getProfileByUsername);
-routes.put('/profiles', checkBearerToken(), ProfileController.updateProfileByUsername);
+routes.get('/profiles', checkBearerToken(), ProfileController.getProfileById);
+routes.put('/profiles', checkBearerToken(), ProfileController.updateProfileById);
 
 routes.post('/addresses', checkBearerToken(), AddressController.createAddress);
-routes.get('/addresses', checkBearerToken(), AddressController.getAddressesByUsername);
+routes.get('/addresses', checkBearerToken(), AddressController.getAddressesById);
 routes.put('/addresses/:id', checkBearerToken(), AddressController.updateAddress);
 routes.delete('/addresses/:id', checkBearerToken(), AddressController.deleteAddress);
 

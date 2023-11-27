@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const UserDetails = require('../models/UserDetails');
 const jwt = require('jsonwebtoken');
 const passwordUtils = require('../utils/passwordUtils'); // importando o arquivo de configurações do bcrypt
 
@@ -22,13 +23,13 @@ const PasswordController = {
         return res.status(401).json({ message: 'Token JWT inválido.' });
       }
 
-      const { username } = decodedToken;
+      const { id } = decodedToken;
       const { password } = req.body;
       //Função para atualizar os dados  de email, pelo id
       const hashedPassword = await passwordUtils.hashPassword(password);
       const updatedUser = await User.update(
         { password: hashedPassword },
-        { where: { username } },
+        { where: { id } },
       );
       // Se nenhum usuário foi atualizado, devido a  id invalido apresenta erro 404
       if (updatedUser[0] === 0) {
@@ -38,17 +39,22 @@ const PasswordController = {
       res.status(200).json({ message: '🤖 Senha Alterada com Sucesso. 🤖' });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Erro interno do servidor 😱🤯' });
+      res.status(500).json({ message: error.message });
     }
   },
-
+  // Função para atualizar a senha do usuario deslogado
   changeUserPassword: async (req, res) => {
-    // Função para alterar a senha do usuário deslogado
+    // TODO talvez criar um metodo de verificaçao se o email é validado antes de trocar senhas.
     try {
-      // criar função para verificar se o email é um email isValidated
       const { email, verificationCode, password } = req.body;
       const user = await User.findOne({ where: { email } });
-      if (user.verificationCode !== verificationCode) {
+      const userDetails = await UserDetails.findOne({
+        where: { userId: user.id },
+      });
+      if (
+        userDetails.verificationCode !== verificationCode ||
+        !userDetails.isCodeValid
+      ) {
         return res
           .status(400)
           .json({ message: 'Código de verificação inválido.' });
@@ -61,10 +67,15 @@ const PasswordController = {
       if (updatedUser[0] === 0) {
         return res.status(404).json({ message: 'Usuário não encontrado.🔍' });
       }
+      await UserDetails.update(
+        // desabilita o código de verificação após utilizado
+        { isCodeValid: false },
+        { where: { userId: user.id } },
+      );
       res.status(200).json({ message: '🤖 Senha Alterada com Sucesso. 🤖' });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Erro interno do servidor 😱🤯' });
+      res.status(500).json({ message: error.message });
     }
   },
 
@@ -72,7 +83,13 @@ const PasswordController = {
     try {
       const { email, verificationCode } = req.body;
       const user = await User.findOne({ where: { email } });
-      if (user.verificationCode !== verificationCode) {
+      const userDetails = await UserDetails.findOne({
+        where: { userId: user.id },
+      });
+      if (
+        userDetails.verificationCode !== verificationCode ||
+        !userDetails.isCodeValid
+      ) {
         return res
           .status(400)
           .json({ message: 'Código de verificação inválido.' });
@@ -80,15 +97,15 @@ const PasswordController = {
       res.status(200).json({ message: 'Código de verificação Validado' });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Erro interno do servidor 😱🤯' });
+      res.status(500).json({ message: error.message });
     }
   },
 
   verifyCurrentPassword: async (req, res) => {
     try {
-      const { username } = req.decodedToken;
+      const { id } = req.decodedToken;
       const { password } = req.body;
-      const user = await User.findOne({ where: { username } });
+      const user = await User.findOne({ where: { id } });
       const isPasswordValid = await passwordUtils.comparePasswords(
         password,
         user.password,
@@ -96,10 +113,10 @@ const PasswordController = {
       if (!isPasswordValid) {
         return res.status(400).json({ message: 'Senha atual inválida.' });
       }
-      res.status(200).json({ message: 'Senha atual válida.' });
+      res.status(200).json({ message: 'Senha atual Validada.' });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Erro interno do servidor 😱🤯' });
+      res.status(500).json({ message: error.message });
     }
   },
 };

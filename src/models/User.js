@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize');
+const UserDetails = require('./UserDetails');
 const db = require('../config/database');
 
 const User = db.define('users', {
@@ -29,26 +30,12 @@ const User = db.define('users', {
     validate: {
       len: [8, 60] // hashedpassword usa 60 caracteres
     }
-  },
-  isAdmin: {
-    type: Sequelize.BOOLEAN,
-    defaultValue: false, // valor padrão é false (cliente)
-  },
-  isMod: {
-    type: Sequelize.BOOLEAN,
-    defaultValue: false, // valor padrão é false (cliente)
-  },
-  isEmailValidated: {
-    type: Sequelize.BOOLEAN,
-    defaultValue: false, // valor padrão é false
-  },
-  verificationCode: {
-    type: Sequelize.STRING,
-    allowNull: true,
-  },
-  
+  }
 
 });
+
+User.hasOne(UserDetails, { foreignKey: 'userId', sourceKey: 'id' });
+UserDetails.belongsTo(User, { foreignKey: 'userId', targetKey: 'id' });
 
 db.sync()
     .then(() => {

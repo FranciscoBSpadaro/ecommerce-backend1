@@ -4,11 +4,15 @@ const User = require('./User');
 
 
 const Profile = db.define('profiles', {
-    id: {
+    userId: {
         type: Sequelize.INTEGER,
         primaryKey: true,
-        autoIncrement: true
-    },
+        allowNull: false,
+        references: {
+          model: 'users', // 'users' refers to table name
+          key: 'id', // 'id' refers to column name in users table
+        }
+      },
     nome: {
         type: Sequelize.STRING(20),
         allowNull: true,
@@ -37,19 +41,11 @@ const Profile = db.define('profiles', {
     celular: {
         type: Sequelize.BIGINT,
         allowNull: true
-    },
-    username: {
-        type: Sequelize.STRING(25),
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'username'
-        }
     }
     
 });
 
-Profile.belongsTo(User, { foreignKey: 'username' });
+Profile.belongsTo(User, { foreignKey: 'userId', targetKey: 'id' });
 
 db.sync()
     .then(() => {

@@ -4,15 +4,15 @@ const Profile = require('../models/Profile');
 module.exports = {
   createProfile: async (req, res) => {
     try {
-      const { username } = req.decodedToken; // checkBearerToken in routes.use
+      const { id } = req.decodedToken; // checkBearerToken in routes.use
       const { nome, nomeMeio, ultimoNome, telefone, celular } = req.body;
-      const profileAlreadyExists = await Profile.findOne({ where: { username } });
+      const profileAlreadyExists = await Profile.findOne({ where: { userId: id } });
 
       if (profileAlreadyExists) {
-        return res.status(400).json({ message: 'A profile with this username already exists.' });
+        return res.status(400).json({ message: 'A profile with this id already exists.' });
       }
 
-      const profile = await Profile.create({ username, nome, nomeMeio, ultimoNome, telefone, celular });
+      const profile = await Profile.create({ userId: id, nome, nomeMeio, ultimoNome, telefone, celular });
       return res.status(200).json(profile);
 
     } catch (error) {
@@ -21,11 +21,11 @@ module.exports = {
     }
   },
 
-  // front-end needs to know the profile by Username
-  getProfileByUsername: async (req, res) => {
+  // front-end needs to know the profile by id
+  getProfileById: async (req, res) => {
     try {
-      const { username } = req.decodedToken;
-      const profile = await Profile.findOne({ where: { username } });
+      const { id } = req.decodedToken;
+      const profile = await Profile.findOne({ where: { userId: id } });
 
       if (!profile) {
         return res.status(404).json({ message: 'Profile not found.' });
@@ -37,12 +37,12 @@ module.exports = {
     }
   },
 
-  updateProfileByUsername: async (req, res) => {
+  updateProfileById: async (req, res) => {
     try {
-      const { username } = req.decodedToken;
+      const { id } = req.decodedToken;
       const { nome, nomeMeio, ultimoNome, telefone, celular } = req.body;
 
-      const existingProfile = await Profile.findOne({ where: { username } });
+      const existingProfile = await Profile.findOne({ where: { userId: id } });
 
       if (!existingProfile) {
         return res.status(404).json({ message: 'Profile not found.' });

@@ -8,11 +8,11 @@ const AddressController = {
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      const { username } = req.decodedToken;
+      const { id } = req.decodedToken;
       const {street, city, state, zipCode } = req.body;
 
       const address = await Address.create({
-        username,
+        id,
         street,
         city,
         state,
@@ -28,10 +28,10 @@ const AddressController = {
     }
   },
 
-  async getAddressesByUsername(req, res) {
+  async getAddressesById(req, res) {
     try {
-      const { username } = req.decodedToken;
-      const address = await Address.findAll({ where: { username } });
+      const { id } = req.decodedToken;
+      const address = await Address.findAll({ where: { id } });
 
       if (!address) {
         return res.status(404).json({ message: 'address not found.' });
@@ -49,7 +49,7 @@ const AddressController = {
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      const { username } = req.decodedToken;
+      const { id } = req.decodedToken;
       const { street, city, state, zipCode } = req.body;
       const addressId = req.params.id;
 
@@ -60,7 +60,7 @@ const AddressController = {
       }
 
       address = await address.update({
-        username,
+        id,
         street,
         city,
         state,
