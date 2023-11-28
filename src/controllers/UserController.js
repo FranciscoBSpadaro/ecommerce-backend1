@@ -67,54 +67,55 @@ module.exports = {
       }
       const { email, username, password } = req.body;
 
-// Find user by email or username
-const user = await User.findOne({
-  where: {
-    [Op.or]: [{ email }, { username }],
-  },
-});
+      // Find user by email or username
+      const user = await User.findOne({
+        where: {
+          [Op.or]: [{ email }, { username }],
+        },
+      });
 
-if (!user) {
-  return res.status(404).json({ message: 'User not found.' });
-}
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
 
-// Find user details
-const userDetails = await UserDetails.findOne({
-  where: {
-    userId: user.id,
-  },
-});
+      // Find user details
+      const userDetails = await UserDetails.findOne({
+        where: {
+          userId: user.id,
+        },
+      });
 
-if (!userDetails) {
-  return res.status(404).json({ message: 'User details not found.' });
-}
+      if (!userDetails) {
+        return res.status(404).json({ message: 'User details not found.' });
+      }
 
-// Compare password with hashed password stored in the database
-const passwordMatch = await comparePasswords(password, user.password);
+      // Compare password with hashed password stored in the database
+      const passwordMatch = await comparePasswords(password, user.password);
 
-if (passwordMatch) {
-  console.log(`🔓 User ${username} ${email} logged in successfully 🔓`);
+      if (passwordMatch) {
+        console.log(`🔓 User ${username} ${email} logged in successfully 🔓`);
 
-  // Generate JWT token
-  const token = jwt.sign(
-    {
-      id: user.id, // Use user id instead of username
-      isEmailValidated: userDetails.isEmailValidated,
-      isAdmin: userDetails.isAdmin,
-      isMod: userDetails.isMod,
-    },
-    JWT_SECRET,
-    {
-      expiresIn: JWT_TIME,
-    },
-  );
+        // Generate JWT token
+        const token = jwt.sign(
+          {
+            id: user.id, // Use user id instead of username
+            username: user.username,
+            isEmailValidated: userDetails.isEmailValidated,
+            isAdmin: userDetails.isAdmin,
+            isMod: userDetails.isMod,
+          },
+          JWT_SECRET,
+          {
+            expiresIn: JWT_TIME,
+          },
+        );
 
-  return res
-    .status(200)
-    .json({ message: `🔑 Login successful! Happy shopping 🛒`, token });
-} else {
-  res.status(400).json({ message: '⚠ Incorrect password ⚠' });
-}
+        return res
+          .status(200)
+          .json({ message: `🔑 Login successful! Happy shopping 🛒`, token });
+      } else {
+        res.status(400).json({ message: '⚠ Incorrect password ⚠' });
+      }
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: error.message });
