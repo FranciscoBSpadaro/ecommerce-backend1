@@ -1,26 +1,30 @@
 const User = require("../models/User");
+const UserDetails = require("../models/UserDetails");
 
 const AdminController = {
   getUser: async (req, res) => {
     const { username, email } = req.query;
 
     try {
+      let user;
       if (username) {
-        const user = await User.findOne({ where: { username: username } });
-        if (user) {
-          res.status(200).json(user);
-        } else {
-          res.status(404).json({ message: "User not found." });
-        }
+        user = await User.findOne({ 
+          where: { username }, 
+          include: [UserDetails] // include UserDetails
+        });
       } else if (email) {
-        const user = await User.findOne({ where: { email: email } });
-        if (user) {
-          res.status(200).json(user);
-        } else {
-          res.status(404).json({ message: "User not found." });
-        }
+        user = await User.findOne({ 
+          where: { email }, 
+          include: [UserDetails] // include UserDetails
+        });
       } else {
-        res.status(400).json({ message: "Invalid search criteria." });
+        return res.status(400).json({ message: "Invalid search criteria." });
+      }
+
+      if (user) {
+        res.status(200).json(user);
+      } else {
+        res.status(404).json({ message: "User not found." });
       }
     } catch (error) {
       console.error(error);
@@ -30,22 +34,18 @@ const AdminController = {
 
   setRoles: async (req, res) => {
     try {
-      const { isAdmin, isMod, username } = req.body;
-      const user = await User.findOne({
-        where: {
-          username: username
-        }
-      });
+      const { isAdmin, isMod, id } = req.body; // use id instead of username
+      const userDetails = await UserDetails.findOne({ where: { userId: id } }); // find userDetails by userId
 
-      if (user) {
-        const updatedRows = await User.update(
-          { isAdmin: isAdmin, isMod: isMod },
-          { where: { username: username } }
+      if (userDetails) {
+        const updatedRows = await UserDetails.update(
+          { isAdmin, isMod },
+          { where: { userId: id } }
         );
 
         if (updatedRows[0] > 0) {
           res.status(200).json({
-            success: `Username ${username}, ADM = ${isAdmin}, MOD = ${isMod}`,
+            success: `User ID ${id}, ADM = ${isAdmin}, MOD = ${isMod}`,
             message: "User roles updated successfully.",
           });
         } else {

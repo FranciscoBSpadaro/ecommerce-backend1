@@ -113,7 +113,7 @@ const PasswordController = {
       if (!isPasswordValid) {
         return res.status(400).json({ message: 'Senha atual inválida.' });
       }
-      res.status(200).json({ message: 'Senha atual Validada.' });
+      res.status(200).json({ message: 'Senha atual Validada, Digite sua nova senha.' });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: error.message });

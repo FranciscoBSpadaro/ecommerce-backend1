@@ -120,17 +120,17 @@ module.exports = {
 
   requestNewPassword: async (req, res) => {
     try {
-      const { verificationCode, email } = req.body;
-      const user = await User.findOne({ where: { email, verificationCode } });
+      const { id } = req.body;
+      const user = await User.findOne({ where: { id } });
 
       if (!user) {
-        return res.status(404).json({ message: 'Invalid verification code.' });
+        return res.status(404).json({ message: error.message});
       }
       // password Length 16
       const newPassword = generateVerificationCode(16);
       const hashedPassword = await hashPassword(newPassword);
-      await User.update({ password: hashedPassword }, { where: { email } });
-      await sendNewPassword(email, newPassword);
+      await User.update({ password: hashedPassword }, { where: { id } });
+      await sendNewPassword(user.email, newPassword);
 
       return res
         .status(200)
