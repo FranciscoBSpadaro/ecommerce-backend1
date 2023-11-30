@@ -22,11 +22,26 @@ module.exports = {
   },
 
   // front-end needs to know the profile by id
-  getProfileById: async (req, res) => {
+  getProfileByToken: async (req, res) => {
     try {
       const { id } = req.decodedToken;
       const profile = await Profile.findOne({ where: { userId: id } });
 
+      if (!profile) {
+        return res.status(404).json({ message: 'Profile not found.' });
+      }
+      return res.status(200).json(profile);
+    } catch (error) {
+      console.error(error);
+      return res.status(400).json({ message: error.message });
+    }
+  },
+
+  getProfileByQuery: async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const profile = await Profile.findOne({ where: { userId: userId } });
+  
       if (!profile) {
         return res.status(404).json({ message: 'Profile not found.' });
       }
@@ -72,10 +87,10 @@ module.exports = {
     }
   },
 
-  deleteProfileByUsername: async (req, res) => {
+  deleteProfileById: async (req, res) => {
     try {
-      const { username } = req.body;
-      const deletedProfile = await Profile.destroy({ where: { username } });
+      const { id } = req.params;
+      const deletedProfile = await Profile.destroy({ where: { userId: id } });
 
       if (!deletedProfile) {
         return res.status(404).json({ message: 'Profile not found.' });

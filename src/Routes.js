@@ -43,7 +43,8 @@ routes.put('/password', checkBearerToken(), PasswordController.updateUserPasswor
 routes.post('/password/verify', checkBearerToken(), PasswordController.verifyCurrentPassword);
 
 routes.post('/profiles', checkBearerToken(), ProfileController.createProfile);
-routes.get('/profiles', checkBearerToken(), ProfileController.getProfileById);
+routes.get('/profiles/query', checkBearerToken(), ProfileController.getProfileByQuery);
+routes.get('/profiles/token', checkBearerToken(), ProfileController.getProfileByToken);
 routes.put('/profiles', checkBearerToken(), ProfileController.updateProfileById);
 
 routes.post('/addresses', checkBearerToken(), AddressController.createAddress);
@@ -80,7 +81,7 @@ adminRoutes.delete('/users/delete', UserController.deleteUser);
 adminRoutes.post('/email/requestNewPassword', EmailController.requestNewPassword);
 
 adminRoutes.get('/profiles', ProfileController.getAllProfiles);
-adminRoutes.delete('/profiles/:id', ProfileController.deleteProfileByUsername);
+adminRoutes.delete('/profiles/:id', ProfileController.deleteProfileById);
 
 adminRoutes.post('/categories', CategoryController.createCategory);
 adminRoutes.put('/categories/:id', CategoryController.updateCategory);
@@ -118,7 +119,7 @@ modRoutes.get('/users', UserController.getUsername);
 modRoutes.post('/email/requestNewPassword', EmailController.requestNewPassword);
 
 modRoutes.get('/profiles', ProfileController.getAllProfiles);
-modRoutes.delete('/profiles/:id', ProfileController.deleteProfileByUsername);
+modRoutes.delete('/profiles/:id', ProfileController.deleteProfileById);
 
 modRoutes.get('/orders', OrderController.getAllOrders);
 
