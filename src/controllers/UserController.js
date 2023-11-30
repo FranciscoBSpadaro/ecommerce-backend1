@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET, JWT_TIME } = process.env;
 const { hashPassword, comparePasswords } = require('../utils/passwordUtils');
 const generateVerificationCode = require('../utils/verificationCode');
-const { sendWelcomeEmail, sendVerificationEmail } = require('../controllers/EmailController');
+const { sendWelcomeEmail } = require('../controllers/EmailController');
+const { canMakeRequest, canEmailMakeRequest } = require('../utils/requestLimiter');
 const { Op } = require('sequelize');
 const { validationResult } = require('express-validator');
 
@@ -15,8 +16,14 @@ const createUser = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
+    const ip = req.ip;
     const { username, email, password } = req.body;
+    if (!canMakeRequest(ip) || !canEmailMakeRequest(email)) {
+      console.log(`SPAM detectado. IP: ${ip}, Email: ${email}`);
+      return res
+        .status(429)
+        .json({ message: 'Too many requests. Please wait for 5 minutes.' });
+    }
 
     // Verificar se já existe um usuário com o mesmo nome de usuário
     const usernameAlreadyExists = await User.findOne({ where: { username } });
@@ -152,47 +159,6 @@ const getUsername = async (req, res) => {
   }
 };
 
-// Função para atualizar o email do usuário
-const updateUserEmail = async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { id } = req.decodedToken; // Use o ID do usuário do token decodificado
-    const { email } = req.body;
-
-    // Buscar usuário por ID
-    const user = await User.findOne({ where: { id } });
-    if (!user) {
-      return res.status(404).json({ message: 'Usuário não encontrado.' });
-    }
-
-    // Atualizar o email do usuário
-    await User.update({ email }, { where: { id } });
-
-    const verificationCode = generateVerificationCode(8);
-    await sendVerificationEmail(email, verificationCode);
-
-    // Atualizar o campo isEmailValidated no modelo UserDetails
-    await UserDetails.update(
-      { isEmailValidated: false },
-      { where: { userId: id } },
-    ); // Use o ID do usuário para atualização
-
-    console.log(
-      `Usuário ${user.username} email atualizado para ${email}. Email de verificação enviado.`,
-    );
-    return res
-      .status(200)
-      .json({ message: '🤖 Email atualizado com sucesso. 🤖' });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: error.message });
-  }
-};
-
 // Função para deletar um usuário (somente administradores podem executar esta ação)
 const deleteUser = async (req, res) => {
   try {
@@ -240,7 +206,9 @@ const deleteUser = async (req, res) => {
       .json({ message: '👋 Usuário deletado com sucesso. 👋' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Não é Possivel excluir um usuário com perfil Associado a ele' });
+    return res.status(500).json({
+      message: 'Não é Possivel excluir um usuário com perfil Associado a ele',
+    });
   }
 };
 
@@ -286,7 +254,6 @@ module.exports = {
   createUser,
   loginUser,
   getUsername,
-  updateUserEmail,
   deleteUser,
   getAllUsers,
   getUserByEmail,

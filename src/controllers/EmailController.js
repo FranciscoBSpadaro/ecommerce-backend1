@@ -3,6 +3,7 @@ const UserDetails = require('../models/UserDetails');
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 const { hashPassword } = require('../utils/passwordUtils');
 const generateVerificationCode = require('../utils/verificationCode');
+const { canMakeRequest, canEmailMakeRequest } = require('../utils/requestLimiter');
 
 const sesClient = new SESClient({
   region: process.env.AWS_DEFAULT_REGION,
@@ -82,7 +83,13 @@ const sendNewPassword = (email, newpassword) => {
 // Request verification code for user email
 const requestVerification = async (req, res) => {
   try {
+    const ip = req.ip;
     const { email } = req.body;
+    if (!canMakeRequest(ip) || !canEmailMakeRequest(email)) {
+      return res
+        .status(429)
+        .json({ message: 'Too many requests. Please wait for 5 minutes.' });
+    }
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
@@ -106,11 +113,9 @@ const requestVerification = async (req, res) => {
       .json({ message: 'Verification email sent successfully' });
   } catch (error) {
     console.error(error);
-    return res
-      .status(500)
-      .json({
-        message: 'Email verification request unsuccessful. An error occurred.',
-      });
+    return res.status(500).json({
+      message: 'Email verification request unsuccessful. An error occurred.',
+    });
   }
 };
 
@@ -144,7 +149,13 @@ const requestNewPassword = async (req, res) => {
 // Verifies the user email using a verification code
 const verifyEmail = async (req, res) => {
   try {
-    const { verificationCode, email } = req.body;
+    const ip = req.ip;
+    const { email, verificationCode } = req.body;
+    if (!canMakeRequest(ip) || !canEmailMakeRequest(email)) {
+      return res
+        .status(429)
+        .json({ message: 'Too many requests. Please wait for 5 minutes.' });
+    }
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
@@ -155,11 +166,9 @@ const verifyEmail = async (req, res) => {
       await User.update({ isEmailValidated: true }, { where: { email } });
       return res.status(200).json({ message: 'Email verified successfully!' });
     } else {
-      return res
-        .status(403)
-        .json({
-          message: 'Invalid verification code. Please check and try again.',
-        });
+      return res.status(403).json({
+        message: 'Invalid verification code. Please check and try again.',
+      });
     }
   } catch (error) {
     console.error(error);
@@ -167,44 +176,50 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-// Updates the user email
+// Função para atualizar o email do usuário
 const updateUserEmail = async (req, res) => {
   try {
-    const { username } = req.decodedToken;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const ip = req.ip;
     const { email } = req.body;
-    const emailExists = await User.findOne({ where: { email } });
+    if (!canMakeRequest(ip) || !canEmailMakeRequest(email)) {
+      console.log(`SPAM detectado. IP: ${ip}, Email: ${email}`);
+      return res
+        .status(429)
+        .json({ message: 'Too many requests. Please wait for 5 minutes.' });
+    }
+    const { id } = req.decodedToken; // Use o ID do usuário do token decodificado
 
-    if (emailExists) {
-      return res.status(400).json({ message: 'Email already exists.' });
+    // Buscar usuário por ID
+    const user = await User.findOne({ where: { userId: id  } });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado.' });
     }
 
-    const isEmailValidated = emailExists.isEmailValidated;
+    // Atualizar o email do usuário
+    await User.update({ email }, { where: { userId: id } });
+
     const verificationCode = generateVerificationCode(8);
+    await sendVerificationEmail(email, verificationCode);
 
-    // Check if the username exists
-    const [updatedRows] = await User.update({ email }, { where: { username } });
+    // Atualizar o campo isEmailValidated no modelo UserDetails
+    await UserDetails.update(
+      { isEmailValidated: false },
+      { where: { userId: id } },
+    ); // Use o ID do usuário para atualização
 
-    if (updatedRows > 0) {
-      console.log(`User ${username}'s email has been updated to ${email}`);
-
-      if (isEmailValidated) {
-        await User.update({ isEmailValidated: false }, { where: { username } });
-        console.log('isEmailValidated status reverted to false.');
-      }
-
-      await sendVerificationEmail(email, verificationCode);
-      await User.update({ verificationCode }, { where: { email } });
-
-      res.status(200).json({
-        message:
-          'Email updated successfully. New verification code has been sent.',
-      });
-    } else {
-      res.status(404).json({ message: 'User not found.' });
-    }
+    console.log(
+      `Usuário ${user.username} email atualizado para ${email}. Email de verificação enviado.`,
+    );
+    return res
+      .status(200)
+      .json({ message: '🤖 Email atualizado com sucesso. 🤖' });
   } catch (error) {
     console.error(error);
-    res.status(400).json({ message: 'Invalid or already registered email' });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -216,4 +231,6 @@ module.exports = {
   requestNewPassword,
   verifyEmail,
   updateUserEmail,
+  canEmailMakeRequest,
+  canMakeRequest
 };
