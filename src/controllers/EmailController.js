@@ -4,6 +4,7 @@ const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 const { hashPassword } = require('../utils/passwordUtils');
 const generateVerificationCode = require('../utils/verificationCode');
 const { canMakeRequest, canEmailMakeRequest } = require('../utils/requestLimiter');
+const { body, validationResult } = require('express-validator');
 
 const sesClient = new SESClient({
   region: process.env.AWS_DEFAULT_REGION,
@@ -83,6 +84,13 @@ const sendNewPassword = (email, newpassword) => {
 // Request verification code for user email
 const requestVerification = async (req, res) => {
   try {
+    // Add validation checks
+    await body('email').isEmail().withMessage('Invalid email').run(req);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const ip = req.ip;
     const { email } = req.body;
     if (!canMakeRequest(ip) || !canEmailMakeRequest(email)) {
@@ -122,6 +130,13 @@ const requestVerification = async (req, res) => {
 // Requests a new password and sends it to the user email
 const requestNewPassword = async (req, res) => {
   try {
+    // Add validation checks
+    await body('id').isInt().withMessage('Invalid user ID').run(req);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { id } = req.body;
     const user = await User.findOne({ where: { id } });
 
@@ -149,9 +164,21 @@ const requestNewPassword = async (req, res) => {
 // Verifies the user email using a verification code
 const verifyEmail = async (req, res) => {
   try {
+    // Add validation checks
+    await body('email').isEmail().withMessage('Invalid email').run(req);
+    await body('verificationCode')
+      .isLength({ min: 10 })
+      .withMessage('Invalid verification code')
+      .run(req);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const ip = req.ip;
     const { email, verificationCode } = req.body;
     if (!canMakeRequest(ip) || !canEmailMakeRequest(email)) {
+      console.log(`SPAM detectado. IP: ${ip}, Email: ${email}`);
       return res
         .status(429)
         .json({ message: 'Too many requests. Please wait for 5 minutes.' });
@@ -179,10 +206,13 @@ const verifyEmail = async (req, res) => {
 // Função para atualizar o email do usuário
 const updateUserEmail = async (req, res) => {
   try {
+    // Add validation checks
+    await body('email').isEmail().withMessage('Invalid email').run(req);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+
     const ip = req.ip;
     const { email } = req.body;
     if (!canMakeRequest(ip) || !canEmailMakeRequest(email)) {
@@ -194,7 +224,7 @@ const updateUserEmail = async (req, res) => {
     const { id } = req.decodedToken; // Use o ID do usuário do token decodificado
 
     // Buscar usuário por ID
-    const user = await User.findOne({ where: { userId: id  } });
+    const user = await User.findOne({ where: { userId: id } });
     if (!user) {
       return res.status(404).json({ message: 'Usuário não encontrado.' });
     }
@@ -232,5 +262,5 @@ module.exports = {
   verifyEmail,
   updateUserEmail,
   canEmailMakeRequest,
-  canMakeRequest
+  canMakeRequest,
 };

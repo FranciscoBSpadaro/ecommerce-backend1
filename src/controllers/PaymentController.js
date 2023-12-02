@@ -1,6 +1,6 @@
 const PaymentMethod = require('../models/PaymentMethod');
 const { validationResult } = require('express-validator');
-const { hashCardNumber } = require('../utils/passwordUtils');
+const { encryptCardNumber } = require('../utils/cardEncryptor');
 
 // Função para criar um novo método de pagamento
 const createPaymentMethod = async (req, res) => {
@@ -10,24 +10,29 @@ const createPaymentMethod = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
-    const { userId, cardNumber, expirationDate } = req.body;
-
+    const { id } = req.decodedToken;
+    const { cardNumber, cardHolderName, cardExpirationDate, type } = req.body;
     // adiçao decriptografia do cartão - exibir apenas os ultimos 4 digitos
-    const hashedCardNumber = await hashCardNumber(cardNumber);
+    const { cardNumberEncrypted, cardLastFourDigits } =
+      encryptCardNumber(cardNumber);
 
     const paymentMethod = await PaymentMethod.create({
-      userId,
-      cardNumber: hashedCardNumber,
-      expirationDate,
+      userId: id,
+      cardNumberEncrypted,
+      cardLastFourDigits,
+      cardHolderName,
+      cardExpirationDate,
+      type, // debit_card ou credit_card
     });
 
     return res.status(201).json({
       message: 'Método de pagamento criado com sucesso',
       paymentMethod: {
         userId: paymentMethod.userId,
-        cardNumber: paymentMethod.cardNumber.substr(-4),
-        expirationDate: paymentMethod.expirationDate,
+        cardNumber: paymentMethod.cardLastFourDigits,
+        cardHolderName: paymentMethod.cardHolderName,
+        cardExpirationDate: paymentMethod.cardExpirationDate,
+        type: paymentMethod.type,
       },
     });
   } catch (error) {
@@ -41,16 +46,19 @@ const createPaymentMethod = async (req, res) => {
 // Função para listar todos os métodos de pagamento de um usuário
 const getPaymentMethodsByUserId = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.params.id;
     const paymentMethods = await PaymentMethod.findAll({
       where: { userId },
     });
 
     return res.status(200).json(
       paymentMethods.map(paymentMethod => ({
+        id: paymentMethod.id, // opcional
         userId: paymentMethod.userId,
-        cardNumber: paymentMethod.cardNumber.substr(-4),
+        cardNumber: paymentMethod.cardLastFourDigits,
+        cardHolderName: paymentMethod.cardHolderName,
         expirationDate: paymentMethod.expirationDate,
+        type: paymentMethod.type,
       })),
     );
   } catch (error) {
@@ -69,7 +77,8 @@ const updatePaymentMethod = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { userId, cardNumber, expirationDate } = req.body;
+    const { userId, cardNumber, cardHolderName, expirationDate, type } =
+      req.body;
     const paymentMethodId = req.params.id;
 
     const paymentMethod = await PaymentMethod.findByPk(paymentMethodId);
@@ -80,21 +89,26 @@ const updatePaymentMethod = async (req, res) => {
         .json({ message: 'Método de pagamento não encontrado' });
     }
 
-    const salt = bcrypt.genSaltSync(10);
-    const hashedCardNumber = bcrypt.hashSync(cardNumber.substr(-4), salt);
+    const cardNumberEncrypted = await hashCardNumber(cardNumber);
+    const cardLastFourDigits = getLastFourDigits(cardNumber);
 
     await paymentMethod.update({
       userId,
-      cardNumber: hashedCardNumber,
+      cardNumberEncrypted,
+      cardLastFourDigits,
+      cardHolderName,
       expirationDate,
+      type,
     });
 
     return res.status(200).json({
       message: 'Método de pagamento atualizado com sucesso',
       paymentMethod: {
         userId: paymentMethod.userId,
-        cardNumber: paymentMethod.cardNumber.substr(-4),
+        cardNumber: paymentMethod.cardLastFourDigits,
+        cardHolderName: paymentMethod.cardHolderName,
         expirationDate: paymentMethod.expirationDate,
+        type: paymentMethod.type,
       },
     });
   } catch (error) {

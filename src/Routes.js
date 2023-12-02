@@ -12,24 +12,39 @@ const EmailController = require('./controllers/EmailController');
 const ProfileController = require('./controllers/ProfileController');
 const AddressController = require('./controllers/AddressController');
 const CategoryController = require('./controllers/CategoryController')
-const OrderProductsController = require('./controllers/OrderProductsController');
 const OrderController = require('./controllers/OrderController')
+const Order_Controller = require('./controllers/Order_Controller')
+const ProcessPayment = require('./controllers/ProcessPayment')
 const AdminController = require('./controllers/AdminController')
 const PaymentController = require('./controllers/PaymentController');
+const TransactionController = require('./controllers/TransactionsController');
 const UploadsController = require('./controllers/UploadsController');
 
 // Middleware to authenticate tokens
 routes.use(
     ejwt({ secret: process.env.JWT_SECRET, algorithms: ['HS256'] }).unless({
-        path: ['/users/signup', '/users/login', '/public/users', '/public/products', '/forgotpassword', '/checkcode', '/email/code']
+      path: [
+        '/users/signup', 
+        '/users/login', 
+        '/public/users', 
+        '/public/products', 
+        '/forgotpassword', 
+        '/checkcode', 
+        '/email/code',
+        /^\/productdetails\/.*/, // Adiciona uma expressão regular para isentar todas as rotas que começam com '/productdetails/'
+        /^\/products\/.*/, // Adiciona uma expressão regular para isentar todas as rotas que começam com '/products/'
+      ]
     })
-);
+  );
 
 // Routes without token authentication
 routes.post('/users/signup', UserController.createUser);
 routes.post('/users/login', UserController.loginUser);
 routes.post('/public/users', UserController.getUserByEmail);
 routes.get('/public/products', ProductController.getAllProducts);
+routes.get('/products/search/:id', ProductController.getProductsByQuery);
+routes.get('/products/:productId', ProductController.getProductById);
+routes.get('/productdetails/:productId', ProductDetailsController.getProductDetailsByProductId);
 routes.put('/forgotpassword', PasswordController.changeUserPassword);
 routes.post('/checkcode', PasswordController.checkCode);
 routes.post('/email/code', EmailController.requestVerification);
@@ -48,7 +63,7 @@ routes.get('/profiles/token', checkBearerToken(), ProfileController.getProfileBy
 routes.put('/profiles', checkBearerToken(), ProfileController.updateProfileById);
 
 routes.post('/addresses', checkBearerToken(), AddressController.createAddress);
-routes.get('/addresses', checkBearerToken(), AddressController.getAddressesById);
+routes.get('/addresses/user/:id', checkBearerToken(), AddressController.getAddressesByUserId);
 routes.put('/addresses/:id', checkBearerToken(), AddressController.updateAddress);
 routes.delete('/addresses/:id', checkBearerToken(), AddressController.deleteAddress);
 
@@ -60,13 +75,17 @@ routes.get('/payments/:id', checkBearerToken(), PaymentController.getPaymentMeth
 routes.put('/payments/:id', checkBearerToken(), PaymentController.updatePaymentMethod);
 routes.delete('/payments/:id', checkBearerToken(), PaymentController.deletePaymentMethod);
 
-routes.post('/orders', checkBearerToken(), OrderController.createOrder);
-routes.get('/orders', checkBearerToken(), OrderController.getAllOrders);
-routes.get('/orders/:id', checkBearerToken(), OrderController.getOrderById);
-routes.put('/orders/:id', checkBearerToken(), OrderController.updateOrder);
+routes.post('/transaction', checkBearerToken(), TransactionController.createTransaction);
+routes.get('/transaction/:id', checkBearerToken(), TransactionController.getTransactionsByUserId);
 
-routes.post('/orderproducts', checkBearerToken(), OrderProductsController.addProductToOrder);
-routes.put('/orderproducts/:id', checkBearerToken(), OrderProductsController.removeProductFromOrder);
+routes.post('/orders/create', checkBearerToken(), OrderController.createOrder);
+routes.post('/orders/addproduct/:id', checkBearerToken(), OrderController.addProductToOrder);
+routes.post('/orders/removeproduct/:id', checkBearerToken(), OrderController.removeProductFromOrder);
+routes.get('/orders/user/:id', checkBearerToken(), Order_Controller.getOrdersByUserId);
+routes.put('/orders/:id', checkBearerToken(), Order_Controller.updateOrder);
+
+routes.get('/orders/checkout/:id', checkBearerToken(), OrderController.checkoutOrder);
+routes.post('/orders/process_payment', checkBearerToken(), ); ProcessPayment.processPayment
 
 
 
@@ -94,18 +113,21 @@ adminRoutes.get('/uploads/images', UploadsController.getImagesByName);
 adminRoutes.post('/uploads', multer(multerConfig).single('file'), UploadsController.uploadImage);
 adminRoutes.delete('/uploads/:id', UploadsController.deleteImage);
 
-adminRoutes.get('/products/:id', ProductController.getProductsByQuery);
-adminRoutes.get('/products/:id', ProductController.getProductById);
 adminRoutes.post('/products', ProductController.createProduct);
 adminRoutes.put('/products/:id', ProductController.updateProductById);
 adminRoutes.delete('/products/:id', ProductController.deleteProductById);
 
-adminRoutes.get('/productdetails/:productId', ProductDetailsController.getProductDetailsByProductId);
-adminRoutes.post('/productdetails', ProductDetailsController.createProductDetails);
+adminRoutes.post('/productdetails/create', ProductDetailsController.createProductDetails);
 adminRoutes.put('/productdetails/:productId', ProductDetailsController.updateProductDetailsByProductId);
 adminRoutes.delete('/productdetails/:productId', ProductDetailsController.deleteProductDetailsByProductId);
 
-adminRoutes.get('/orders', OrderController.getAllOrders);
+adminRoutes.get('/transactions', TransactionController.getAllTransactions);
+adminRoutes.delete('/transaction/:id', TransactionController.deleteTransaction);
+
+adminRoutes.get('/orders/search/:id', Order_Controller.getOrderByIdAdm);
+adminRoutes.get('/orders/confirmed', Order_Controller.getAllConfirmedOrders);
+adminRoutes.get('/orders/pending', Order_Controller.getAllPendingOrders);
+adminRoutes.get('/orders/rejected', Order_Controller.getAllRejectedOrders);
 
 
 routes.use('/admin', adminRoutes);
@@ -121,7 +143,7 @@ modRoutes.post('/email/requestNewPassword', EmailController.requestNewPassword);
 modRoutes.get('/profiles', ProfileController.getAllProfiles);
 modRoutes.delete('/profiles/:id', ProfileController.deleteProfileById);
 
-modRoutes.get('/orders', OrderController.getAllOrders);
+// modRoutes.get('/orders', OrderController.getAllOrders);
 
 modRoutes.post('/categories', CategoryController.createCategory);
 modRoutes.put('/categories/:id', CategoryController.updateCategory);
@@ -130,7 +152,6 @@ modRoutes.put('/categories/:id', CategoryController.updateCategory);
 modRoutes.put('/products/:id', ProductController.updateProductById);
 
 // Rotas para ProductDetails em modRoutes
-modRoutes.get('/productdetails/:productId', ProductDetailsController.getProductDetailsByProductId);
 modRoutes.post('/productdetails', ProductDetailsController.createProductDetails);
 modRoutes.put('/productdetails/:productId', ProductDetailsController.updateProductDetailsByProductId);
 modRoutes.delete('/productdetails/:productId', ProductDetailsController.deleteProductDetailsByProductId);

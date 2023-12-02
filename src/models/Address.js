@@ -3,17 +3,17 @@ const db = require('../config/database');
 const User = require('./User');
 
 const Address = db.define('addresses', {
-  id: {
+  addressId: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
-  username: {
-    type: Sequelize.STRING,
+  userId: {
+    type: Sequelize.INTEGER,
     allowNull: false,
     references: {
       model: User,
-      key: 'username'
+      key: 'id'
     }
   },
   street: {
@@ -34,7 +34,7 @@ const Address = db.define('addresses', {
   },
 });
 
-Address.belongsTo(User, { foreignKey: 'username' });
+Address.belongsTo(User, { foreignKey: 'userId' });
 
 db.sync()
     .then(() => {

@@ -9,11 +9,5 @@ module.exports = {
 
   async comparePasswords(password, hashedPassword) {
     return bcrypt.compare(password, hashedPassword);
-  },
-
-  async hashCardNumber(cardNumber) {
-    const salt = await bcrypt.genSalt(10);
-    const hashedCardNumber = await bcrypt.hash(cardNumber.substr(-4), salt);
-    return hashedCardNumber;
   }
 };

@@ -11,7 +11,7 @@ async function createAddress(req, res) {
     const { street, city, state, zipCode } = req.body;
 
     const address = await Address.create({
-      id,
+      userId: id,
       street,
       city,
       state,
@@ -27,10 +27,10 @@ async function createAddress(req, res) {
   }
 }
 
-async function getAddressesById(req, res) {
+async function getAddressesByUserId(req, res) {
   try {
-    const { id } = req.decodedToken;
-    const addresses = await Address.findAll({ where: { id } });
+    const { id: userId } = req.params;
+    const addresses = await Address.findAll({ where: { userId : userId } });
 
     if (addresses.length === 0) {
       // check for empty address array
@@ -107,7 +107,7 @@ const validateAddress = [
 
 module.exports = {
   createAddress,
-  getAddressesById,
+  getAddressesByUserId,
   updateAddress,
   deleteAddress,
   validateAddress,
