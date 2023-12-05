@@ -28,7 +28,15 @@ const Transaction = db.define('Transaction', {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  payer: {
+  payerEmail: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  payerIdentificationType: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  payerIdentificationNumber: {
     type: Sequelize.STRING,
     allowNull: false,
   },
@@ -48,15 +56,17 @@ const Transaction = db.define('Transaction', {
 
 Transaction.belongsTo(User, { foreignKey: 'userId' });
 
-Transaction.createForOrder = function(order, transaction_amount, payment_method_id, paymentResponseId, installments, payer, issuer_id ) {
+Transaction.createForOrder = function(order, transaction_amount, payment_method_id, paymentResponseId, description, installments, payerEmail, payerIdentificationType, payerIdentificationNumber, issuer_id ) {
   return this.create({
     userId: order.userId,
     transactionAmount: transaction_amount,
-    description: `Pagamento do pedido ${order.orderId}`,
+    description: `Pagamento do pedido ${order.orderId}, ${description}`,
     installments : installments,
     paymentMethodId: payment_method_id,
     issuerId : issuer_id,
-    payer : payer,
+    payerEmail: payerEmail,
+    payerIdentificationType: payerIdentificationType,
+    payerIdentificationNumber: payerIdentificationNumber,
     paymentResponseId: paymentResponseId,
   });
 };

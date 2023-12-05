@@ -64,8 +64,11 @@ const processPayment = async (req, res) => {
           transaction_amount,
           payment_method_id,
           data.id,
+          body.description,
           body.installments,
-          JSON.stringify(payer), // alterar para payer.email...
+          payer.email,
+          payer.identification.type,
+          payer.identification.number,
           issuer_id
         );
 
