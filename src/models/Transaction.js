@@ -1,7 +1,6 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database');
 const User = require('./User');
-const PaymentMethod = require('./PaymentMethod');
 
 const Transaction = db.define('Transaction', {
   transactionId: {
@@ -17,7 +16,11 @@ const Transaction = db.define('Transaction', {
       key: 'id',
     },
   },
-  amount: {
+  issuerId: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+  },
+  transactionAmount: {
     type: Sequelize.DECIMAL(10, 2),
     allowNull: false,
   },
@@ -25,25 +28,36 @@ const Transaction = db.define('Transaction', {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  payer: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   paymentMethodId: { // visa , mastercard ,  etc
     type: Sequelize.STRING,
     allowNull: false,
   },
+  installments: { // parcelas
+    type: Sequelize.INTEGER,
+    allowNull: false,
+  },
   paymentResponseId: {
     type: Sequelize.INTEGER,
-    allowNull: true,
+    allowNull: false,
   }
 });
 
 Transaction.belongsTo(User, { foreignKey: 'userId' });
 
-Transaction.createForOrder = function(order, paymentMethodId, paymentResponseId) {
+Transaction.createForOrder = function(order, transaction_amount, payment_method_id, paymentResponseId, installments, payer, issuer_id ) {
   return this.create({
     userId: order.userId,
-    amount: order.total_value,
+    transactionAmount: transaction_amount,
     description: `Pagamento do pedido ${order.orderId}`,
+    installments : installments,
+    paymentMethodId: payment_method_id,
+    issuerId : issuer_id,
+    payer : payer,
     paymentResponseId: paymentResponseId,
-    paymentMethodId: paymentMethodId
   });
 };
 

@@ -38,7 +38,7 @@ const Order = db.define('orders', {
       key: 'addressId',
     },
   },
-  payment_details: {
+  payment_details: { // salvar detalhes da transação
     type: Sequelize.INTEGER,
     allowNull: true,
     references: {
@@ -49,7 +49,7 @@ const Order = db.define('orders', {
 });
 
 const OrderProducts = db.define('order_products', {
-  quantity: {
+  order_quantity: {
     type: Sequelize.INTEGER,
     allowNull: false,
     defaultValue: 1,
@@ -79,7 +79,7 @@ Order.prototype.calculateTotalValue = async function () {
   const products = await this.getProducts();
   return products.reduce((total, product) => {
     const price = parseFloat(product.price);
-    const quantity = parseInt(product.order_products.quantity, 10);
+    const quantity = parseInt(product.order_products.order_quantity, 10); // alterar 'quantity' para 'order_quantity'
 
     if (!isNaN(price) && !isNaN(quantity)) {
       return total + price * quantity;

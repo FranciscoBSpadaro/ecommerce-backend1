@@ -11,8 +11,8 @@ const generateIdempotencyKey = () => uuidv4();
 
 const processPayment = async (req, res) => {
   try {
-    const { body, orderId } = req;
-    const { payer } = body;
+    const { body } = req;
+    const { payer, orderId, transaction_amount, payment_method_id, issuer_id } = body;
 
     const payment = new Payment(client);
 
@@ -21,16 +21,14 @@ const processPayment = async (req, res) => {
       return res.status(404).json({ message: 'Pedido não encontrado' });
     }
 
-    let totalValue = await order.calculateTotalValue();
-    totalValue = parseFloat(totalValue);
-
-    const paymentData = { // pagamento com cartão
-      transaction_amount: Number(body.transactionAmount),
+    const paymentData = {
+      // pagamento com cartão
+      transaction_amount: Number(transaction_amount), // total value
       token: body.token,
       description: body.description, // descrição dos produtos
       installments: Number(body.installments), // parcelas
-      payment_method_id: body.paymentMethodId,
-      issuer_id: body.issuerId,
+      payment_method_id: payment_method_id, // master , visa...
+      issuer_id: issuer_id,
       payer: {
         email: payer.email, // email mercadopago
         identification: {
@@ -47,20 +45,43 @@ const processPayment = async (req, res) => {
       .then(async function (data) {
         await order.confirm();
 
+        // Certifique-se de que os campos não sejam nulos antes de passá-los para a função
+        if (
+          !body.transaction_amount ||
+          !body.description ||
+          !body.installments ||
+          !body.payment_method_id ||
+          !body.issuer_id ||
+          !payer
+        ) {
+          return res
+            .status(400)
+            .json({ message: 'Campos obrigatórios estão faltando' });
+        }
+
         const transaction = await Transaction.createForOrder(
           order,
-          body.paymentMethodId,
+          transaction_amount,
+          payment_method_id,
           data.id,
+          body.installments,
+          JSON.stringify(payer), // alterar para payer.email...
+          issuer_id
         );
 
-        await order.updateWithTransaction(transaction);
+        await order.updateWithTransaction(transaction.transactionId);
 
         res.status(201).json({
-          detail: data.status_detail,
           status: data.status,
+          status_detail: data.status_detail,
           id: data.id,
+          date_approved: data.date_approved,
+          payer: data.payer,
+          payment_method_id: data.payment_method_id,
+          payment_type_id: data.payment_type_id,
+          refunds: data.refunds, // opcional
           order,
-          transaction
+          transaction,
         });
       })
       .catch(function (error) {
@@ -68,7 +89,6 @@ const processPayment = async (req, res) => {
         const { errorMessage, errorStatus } = validateError(error);
         res.status(errorStatus).json({ error_message: errorMessage });
       });
-
   } catch (error) {
     console.error('Erro ao confirmar pedido', error);
     res.status(500).json({ message: 'Ocorreu um erro ao confirmar o pedido' });
@@ -76,7 +96,7 @@ const processPayment = async (req, res) => {
 };
 
 function validateError(error) {
-  let errorMessage = 'Unknown error cause';
+  let errorMessage = error.message;
   let errorStatus = 400;
 
   if (error.cause) {

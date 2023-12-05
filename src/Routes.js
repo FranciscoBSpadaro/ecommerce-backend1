@@ -16,7 +16,6 @@ const OrderController = require('./controllers/OrderController')
 const Order_Controller = require('./controllers/Order_Controller')
 const ProcessPayment = require('./controllers/ProcessPayment')
 const AdminController = require('./controllers/AdminController')
-const PaymentController = require('./controllers/PaymentController');
 const TransactionController = require('./controllers/TransactionsController');
 const UploadsController = require('./controllers/UploadsController');
 
@@ -70,22 +69,17 @@ routes.delete('/addresses/:id', checkBearerToken(), AddressController.deleteAddr
 routes.get('/categories', checkBearerToken(), CategoryController.getAllCategories);
 routes.get('/categories/:id', checkBearerToken(), CategoryController.getCategoryById);
 
-routes.post('/payments', checkBearerToken(), PaymentController.createPaymentMethod);
-routes.get('/payments/:id', checkBearerToken(), PaymentController.getPaymentMethodsByUserId);
-routes.put('/payments/:id', checkBearerToken(), PaymentController.updatePaymentMethod);
-routes.delete('/payments/:id', checkBearerToken(), PaymentController.deletePaymentMethod);
-
-routes.post('/transaction', checkBearerToken(), TransactionController.createTransaction);
 routes.get('/transaction/:id', checkBearerToken(), TransactionController.getTransactionsByUserId);
 
 routes.post('/orders/create', checkBearerToken(), OrderController.createOrder);
 routes.post('/orders/addproduct/:id', checkBearerToken(), OrderController.addProductToOrder);
 routes.post('/orders/removeproduct/:id', checkBearerToken(), OrderController.removeProductFromOrder);
 routes.get('/orders/user/:id', checkBearerToken(), Order_Controller.getOrdersByUserId);
-routes.put('/orders/:id', checkBearerToken(), Order_Controller.updateOrder);
+routes.get('/orders/:id', checkBearerToken(), Order_Controller.getOrderById);
+routes.put('/orders/updatequantity/:orderId', checkBearerToken(), Order_Controller.updateProductQuantityInOrder);
 
 routes.get('/orders/checkout/:id', checkBearerToken(), OrderController.checkoutOrder);
-routes.post('/orders/process_payment', checkBearerToken(), ); ProcessPayment.processPayment
+routes.post('/orders/process_payment', checkBearerToken(), ProcessPayment.processPayment);
 
 
 

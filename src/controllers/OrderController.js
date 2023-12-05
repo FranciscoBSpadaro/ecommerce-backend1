@@ -92,7 +92,6 @@ const checkoutOrder = async (req, res) => {
       order,
       products: order.Products,
       totalValue,
-      mercadoPagoPublicKey: process.env.MERCADO_PAGO_PUBLIC_KEY,
     });
   } catch (error) {
     console.error('Erro ao fazer checkout do pedido', error);
