@@ -7,8 +7,18 @@ async function createAddress(req, res) {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    const { id } = req.decodedToken;
+    const { id } = req.params;
     const { street, city, state, zipCode } = req.body;
+
+    // Fetch all addresses for the user
+    const addresses = await Address.findAll({ where: { userId: id } });
+
+    // Check if the user already has 3 addresses
+    if (addresses.length >= 3) {
+      return res
+        .status(400)
+        .json({ message: 'User cannot have more than 3 addresses' });
+    }
 
     const address = await Address.create({
       userId: id,
@@ -30,7 +40,7 @@ async function createAddress(req, res) {
 async function getAddressesByUserId(req, res) {
   try {
     const { id: userId } = req.params;
-    const addresses = await Address.findAll({ where: { userId : userId } });
+    const addresses = await Address.findAll({ where: { userId: userId } });
 
     if (addresses.length === 0) {
       // check for empty address array
@@ -49,9 +59,8 @@ async function updateAddress(req, res) {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    const { id } = req.decodedToken;
+    const addressId = req.params.id
     const { street, city, state, zipCode } = req.body;
-    const addressId = req.params.id;
 
     const address = await Address.findByPk(addressId);
 
@@ -61,7 +70,6 @@ async function updateAddress(req, res) {
 
     // only update fields that are sent in the body and not the entire object
     await address.update({
-      id,
       street: street ?? address.street,
       city: city ?? address.city,
       state: state ?? address.state,

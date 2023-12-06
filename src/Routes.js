@@ -61,10 +61,10 @@ routes.get('/profiles/query', checkBearerToken(), ProfileController.getProfileBy
 routes.get('/profiles/token', checkBearerToken(), ProfileController.getProfileByToken);
 routes.put('/profiles', checkBearerToken(), ProfileController.updateProfileById);
 
-routes.post('/addresses', checkBearerToken(), AddressController.createAddress);
+routes.post('/addresses/create/:id', checkBearerToken(), AddressController.createAddress);
 routes.get('/addresses/user/:id', checkBearerToken(), AddressController.getAddressesByUserId);
-routes.put('/addresses/:id', checkBearerToken(), AddressController.updateAddress);
-routes.delete('/addresses/:id', checkBearerToken(), AddressController.deleteAddress);
+routes.put('/addresses/update/:id', checkBearerToken(), AddressController.updateAddress);
+routes.delete('/addresses/delete/:id', checkBearerToken(), AddressController.deleteAddress);
 
 routes.get('/categories', checkBearerToken(), CategoryController.getAllCategories);
 routes.get('/categories/:id', checkBearerToken(), CategoryController.getCategoryById);
