@@ -5,6 +5,7 @@ const Order = require('../models/Order');
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+  integrator_id: process.env.MERCADO_PAGO_INTEGRATOR_ID,
 });
 
 const generateIdempotencyKey = () => uuidv4();
