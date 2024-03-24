@@ -62,7 +62,8 @@ Certifique-se de substituir "[seu_token_jwt_aqui]" pelo seu token JWT válido. C
   -  JWT_SECRET=   é uma senha para JWToken fazer a hash do token de login
 
 - Diagrama de Entidade e Relacionamento.
-- ![Alt text](<tmp/Captura de tela 2023-10-31 154804.jpg>)
+![image](https://github.com/FranciscoBSpadaro/ecommerce-backend1/assets/69543568/4f19d1f1-3c7e-4b8e-bf86-a378581b7fcd)
+
 - Todos os detalhes do desenvolvimento vai ficar no meu [Blog](https://fbs-blog.netlify.app/projeto-de-ecommerce-backend-com-node-js-banco-de-dados-sql/ "FBS-DEV BLOG") para evitar ter aqui um readme muito grande.
 - Acompanhe o historico de commits para entender a evolução do codigo. 
 
