@@ -7,13 +7,20 @@ const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
   integrator_id: process.env.MERCADO_PAGO_INTEGRATOR_ID,
 });
-
+// generateIdempotencyKey é uma função que gera um id único para cada requisição de pagamento adicionando mais segurança e evitando duplicatas
 const generateIdempotencyKey = () => uuidv4();
 
 const processPayment = async (req, res) => {
   try {
+    console.log('Iniciando processamento de pagamento...');
+
     const { body } = req;
     const { payer, orderId, transaction_amount, payment_method_id, issuer_id } = body;
+
+    // Verifique se todos os campos necessários estão presentes
+    if (!payer || !orderId || !transaction_amount || !payment_method_id || !issuer_id) {
+      return res.status(400).json({ message: 'Campos obrigatórios estão faltando' });
+    }
 
     const payment = new Payment(client);
 
@@ -23,30 +30,31 @@ const processPayment = async (req, res) => {
     }
 
     const paymentData = {
-      // pagamento com cartão
-      transaction_amount: Number(transaction_amount), // total value
+      transaction_amount: Number(transaction_amount),
       token: body.token,
-      description: body.description, // descrição dos produtos
-      installments: Number(body.installments), // parcelas
-      payment_method_id: payment_method_id, // master , visa...
+      description: body.description,
+      installments: Number(body.installments),
+      payment_method_id: payment_method_id,
       issuer_id: issuer_id,
       payer: {
-        email: payer.email, // email mercadopago
+        email: payer.email,
         identification: {
-          type: payer.identification.docType, // cpf
-          number: payer.identification.docNumber, // numero cpf
+          type: payer.identification.type,
+          number: payer.identification.number,
         },
       },
     };
-
     const idempotencyKey = generateIdempotencyKey();
+
+    console.log('Dados de pagamento:', paymentData); // Adicionado log
 
     payment
       .create({ body: paymentData }, { idempotencyKey: idempotencyKey })
       .then(async function (data) {
+        console.log('Dados de resposta do pagamento:', data); // Adicionado log
+
         await order.confirm();
 
-        // Certifique-se de que os campos não sejam nulos antes de passá-los para a função
         if (
           !body.transaction_amount ||
           !body.description ||
@@ -83,13 +91,13 @@ const processPayment = async (req, res) => {
           payer: data.payer,
           payment_method_id: data.payment_method_id,
           payment_type_id: data.payment_type_id,
-          refunds: data.refunds, // opcional
+          refunds: data.refunds,
           order,
           transaction,
         });
       })
       .catch(function (error) {
-        console.log(error);
+        console.log('Erro ao processar pagamento:', error); // Adicionado log
         const { errorMessage, errorStatus } = validateError(error);
         res.status(errorStatus).json({ error_message: errorMessage });
       });
@@ -100,11 +108,13 @@ const processPayment = async (req, res) => {
 };
 
 function validateError(error) {
+  console.log('Validando erro:', error); // Adicionado log
+
   let errorMessage = error.message;
   let errorStatus = 400;
 
   if (error.cause) {
-    const sdkErrorMessage = error.cause[0].description;
+    const sdkErrorMessage = error.cause && error.cause[0] ? error.cause[0].description : 'Unknown error';
     errorMessage = sdkErrorMessage || errorMessage;
 
     const sdkErrorStatus = error.status;
@@ -113,7 +123,6 @@ function validateError(error) {
 
   return { errorMessage, errorStatus };
 }
-
 module.exports = {
   processPayment,
 };
