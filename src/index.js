@@ -30,10 +30,6 @@ app.use((req, res, next) => {
 // Usando o middleware Helmet
 app.use(helmet());
 
-// Configuração do middleware e do body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
 app.use(morgan('dev')); // logs for http requests in terminal
 
 const routes = require('./Routes');
